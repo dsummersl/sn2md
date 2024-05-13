@@ -1,6 +1,7 @@
 import os
 import hashlib
 import yaml
+import json
 
 import click
 import supernotelib as sn
@@ -11,7 +12,8 @@ def load_notebook(path):
     return sn.load_notebook(path)
 
 
-def convert_all(converter, total, file_name, save_func, visibility_overlay):
+def convert_all(converter, total, path, save_func, visibility_overlay):
+    file_name = path + "/page.png"
     basename, extension = os.path.splitext(file_name)
     max_digits = len(str(total))
     files = []
@@ -25,7 +27,7 @@ def convert_all(converter, total, file_name, save_func, visibility_overlay):
 
 def convert_to_png(notebook, path):
     # Compute the hash of the notebook
-    notebook_hash = hashlib.sha256(notebook.encode()).hexdigest()
+    notebook_hash = hashlib.sha256(json.dumps(notebook.get_metadata().__dict__).encode()).hexdigest()
 
     # Check if the hash already exists in the metadata
     metadata_path = os.path.join(path, 'metadata.yaml')
@@ -68,7 +70,7 @@ def import_supernote(filename, output):
     os.makedirs(image_output_path, exist_ok=True)
 
     try:
-        pages = convert_to_png(notebook, image_output_path + "/page.png")
+        pages = convert_to_png(notebook, image_output_path)
         # TODO Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
     except ValueError as e:
         click.echo("Notebook hasn't been modified.")
