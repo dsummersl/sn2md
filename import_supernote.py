@@ -1,5 +1,6 @@
 import os
 import hashlib
+import yaml
 
 import click
 import supernotelib as sn
@@ -26,9 +27,17 @@ def convert_to_png(notebook, path):
     # Compute the hash of the notebook
     notebook_hash = hashlib.sha256(notebook.encode()).hexdigest()
 
-    # Check if the hash already exists in the path
-    if notebook_hash in path:
-        raise ValueError("The notebook hasn't been modified.")
+    # Check if the hash already exists in the metadata
+    metadata_path = os.path.join(path, 'metadata.yaml')
+    if os.path.exists(metadata_path):
+        with open(metadata_path, 'r') as f:
+            metadata = yaml.safe_load(f)
+            if 'notebook_hash' in metadata and metadata['notebook_hash'] == notebook_hash:
+                raise ValueError("The notebook hasn't been modified.")
+    else:
+        # Store the notebook_hash in the metadata
+        with open(metadata_path, 'w') as f:
+            yaml.dump({'notebook_hash': notebook_hash}, f)
 
     converter = ImageConverter(notebook)
     bg_visibility = VisibilityOverlay.DEFAULT
