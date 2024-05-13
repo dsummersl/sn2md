@@ -2,6 +2,7 @@ import base64
 import hashlib
 import json
 import os
+import sys
 
 import click
 import supernotelib as sn
@@ -100,8 +101,6 @@ def convert_to_png(notebook, path):
     help="Output directory for images.",
 )
 def import_supernote(filename, output):
-    click.echo("Importing file %s" % filename)
-
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
@@ -119,18 +118,25 @@ created: {year_month_day}
 tags: journal/entry, supernote
 ---
 
+# Text
+
 """
 
-        for i, page in enumerate(convert_to_png(notebook, image_output_path), start=1):
-            markdown = markdown + f"## Page {i}\n\n"
-            markdown = markdown + f"![{page}]({os.path.abspath(page)})\n\n"
-            markdown = markdown + "## Content\n\n"
-            markdown = markdown + image_to_markdown(page)
+        pages = convert_to_png(notebook, image_output_path)
+        for page in pages:
+            markdown = markdown +"\n"+ image_to_markdown(page)
 
-        with open(os.path.join(image_output_path, "note.md"), "w") as f:
+        markdown = markdown + "\n\n# Images\n\n"
+        for page in pages:
+            markdown = markdown + f"![{page}](file://{os.path.abspath(page)})\n"
+
+        with open(os.path.join(image_output_path, f"{year_month_day}_supernote.md"), "w") as f:
             f.write(markdown)
+
+        print(os.path.join(image_output_path, f"{year_month_day}_supernote.md"))
     except ValueError:
         click.echo("Notebook hasn't been modified.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
