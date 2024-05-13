@@ -66,9 +66,13 @@ def import_supernote(filename, output):
     notebook = load_notebook(filename)
     image_output_path = os.path.join(output, os.path.splitext(os.path.basename(filename))[0])
     os.makedirs(image_output_path, exist_ok=True)
-    pages = convert_to_png(notebook, image_output_path + "/page.png")
 
-    # TODO Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
+    try:
+        pages = convert_to_png(notebook, image_output_path + "/page.png")
+        # TODO Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
+    except ValueError as e:
+        click.echo("Notebook hasn't been modified.")
+
     # TODO if the path already exists, check to see if the sha of the note has changed.
 
 
