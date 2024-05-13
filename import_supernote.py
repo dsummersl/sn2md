@@ -1,4 +1,5 @@
 import os
+import hashlib
 
 import click
 import supernotelib as sn
@@ -22,6 +23,13 @@ def convert_all(converter, total, file_name, save_func, visibility_overlay):
 
 
 def convert_to_png(notebook, path):
+    # Compute the hash of the notebook
+    notebook_hash = hashlib.sha256(notebook.encode()).hexdigest()
+
+    # Check if the hash already exists in the path
+    if notebook_hash in path:
+        raise ValueError("The notebook hasn't been modified.")
+
     converter = ImageConverter(notebook)
     bg_visibility = VisibilityOverlay.DEFAULT
     vo = sn.converter.build_visibility_overlay(background=bg_visibility)
