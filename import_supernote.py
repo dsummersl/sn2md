@@ -13,8 +13,9 @@ from supernotelib.converter import ImageConverter, VisibilityOverlay
 
 TO_MARKDOWN_TEMPLATE = """
 Convert the following image to markdown format. Incorporate bullet journal
-styles to this document. When you encounter a 'dot list' use a markdown
-checkbox. Return only markdown (no codeblocks or flavor text before/after the output).
+styles to this document. For '.>-*X' in front of lines use assume its a list
+item. Return only markdown - no codeblocks or flavor text before/after the
+output.
 """
 
 chat = ChatOpenAI(model="gpt-4o")
@@ -118,6 +119,8 @@ created: {year_month_day}
 tags: journal/entry, supernote
 ---
 
+Obsidian daily notes: [[{year_month_day}]]
+
 # Text
 
 """
@@ -128,14 +131,14 @@ tags: journal/entry, supernote
 
         markdown = markdown + "\n\n# Images\n\n"
         for page in pages:
-            markdown = markdown + f"![{page}](file://{os.path.abspath(page)})\n"
+            markdown = markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
 
-        with open(os.path.join(image_output_path, f"{year_month_day}_supernote.md"), "w") as f:
+        with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
             f.write(markdown)
 
-        print(os.path.join(image_output_path, f"{year_month_day}_supernote.md"))
+        print(os.path.join(image_output_path, f"{notebook_name}.md"))
     except ValueError:
-        click.echo("Notebook hasn't been modified.")
+        click.echo("Notebook already processed")
         sys.exit(1)
 
 
