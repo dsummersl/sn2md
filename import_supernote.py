@@ -69,26 +69,24 @@ def convert_all(
     return files
 
 
-def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
-    # Compute the hash of the notebook
-    notebook_hash = hashlib.sha256(
-        json.dumps(notebook.get_metadata().__dict__).encode()
-    ).hexdigest()
+def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> None:
+    # Compute the hash of the notebook file itself
+    with open(notebook_path, "rb") as f:
+        notebook_hash = hashlib.sha256(f.read()).hexdigest()
 
     # Check if the hash already exists in the metadata
-    metadata_path = os.path.join(path, "metadata.yaml")
+    metadata_path = os.path.join(output_path, "metadata.yaml")
     if os.path.exists(metadata_path):
         with open(metadata_path, "r") as f:
             metadata = yaml.safe_load(f)
-            if (
-                "notebook_hash" in metadata
-                and metadata["notebook_hash"] == notebook_hash
-            ):
+            if "notebook_hash" in metadata and metadata["notebook_hash"] == notebook_hash:
                 raise ValueError("The notebook hasn't been modified.")
     else:
         # Store the notebook_hash in the metadata
         with open(metadata_path, "w") as f:
             yaml.dump({"notebook_hash": notebook_hash}, f)
+
+def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
 
     converter = ImageConverter(notebook)
     bg_visibility = VisibilityOverlay.DEFAULT
@@ -107,6 +105,7 @@ def cli():
 
 def import_supernote_file_core(filename: str, output: str) -> None:
     # Export images of the note file into a directory with the same basename as the file.
+    compute_and_check_notebook_hash(filename, output)
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
     image_output_path = os.path.join(output, notebook_name)
