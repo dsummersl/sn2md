@@ -79,15 +79,18 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
     if os.path.exists(metadata_path):
         with open(metadata_path, "r") as f:
             metadata = yaml.safe_load(f)
-            if "notebook_hash" in metadata and metadata["notebook_hash"] == notebook_hash:
+            if (
+                "notebook_hash" in metadata
+                and metadata["notebook_hash"] == notebook_hash
+            ):
                 raise ValueError("The notebook hasn't been modified.")
     else:
         # Store the notebook_hash in the metadata
         with open(metadata_path, "w") as f:
             yaml.dump({"notebook_hash": notebook_hash}, f)
 
-def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
 
+def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
     converter = ImageConverter(notebook)
     bg_visibility = VisibilityOverlay.DEFAULT
     vo = sn.converter.build_visibility_overlay(background=bg_visibility)
@@ -112,9 +115,7 @@ def import_supernote_file_core(filename: str, output: str) -> None:
     os.makedirs(image_output_path, exist_ok=True)
 
     # the notebook_name is YYYYMMDD_HHMMSS
-    year_month_day = (
-        f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
-    )
+    year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
     # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
     markdown = f"""---
 created: {year_month_day}
@@ -133,9 +134,7 @@ Obsidian daily notes: [[{year_month_day}]]
 
     markdown = markdown + "\n\n# Images\n\n"
     for page in pages:
-        markdown = (
-            markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
-        )
+        markdown = markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
 
     with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
         f.write(markdown)
