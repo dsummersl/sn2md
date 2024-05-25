@@ -21,12 +21,12 @@ output.
 chat = ChatOpenAI(model="gpt-4o")
 
 
-def encode_image(image_path):
+def encode_image(image_path: str) -> str:
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-def image_to_markdown(path) -> str:
+def image_to_markdown(path: str) -> str:
     result = chat.invoke(
         [
             HumanMessage(
@@ -45,11 +45,13 @@ def image_to_markdown(path) -> str:
     return str(result.content)
 
 
-def load_notebook(path):
+def load_notebook(path: str) -> sn.Notebook:
     return sn.load_notebook(path)
 
 
-def convert_all(converter, total, path, save_func, visibility_overlay):
+from typing import Callable, List
+
+def convert_all(converter: ImageConverter, total: int, path: str, save_func: Callable, visibility_overlay: VisibilityOverlay) -> List[str]:
     file_name = path + "/page.png"
     basename, extension = os.path.splitext(file_name)
     max_digits = len(str(total))
@@ -62,7 +64,7 @@ def convert_all(converter, total, path, save_func, visibility_overlay):
     return files
 
 
-def convert_to_png(notebook, path):
+def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
     # Compute the hash of the notebook
     notebook_hash = hashlib.sha256(
         json.dumps(notebook.get_metadata().__dict__).encode()
@@ -98,7 +100,7 @@ def cli():
     pass
 
 
-def import_supernote_file_core(filename, output):
+def import_supernote_file_core(filename: str, output: str) -> None:
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
@@ -141,7 +143,7 @@ Obsidian daily notes: [[{year_month_day}]]
         sys.exit(1)
 
 
-def import_supernote_directory_core(directory, output):
+def import_supernote_directory_core(directory: str, output: str) -> None:
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
@@ -157,7 +159,7 @@ def import_supernote_directory_core(directory, output):
     type=click.Path(writable=True),
     help="Output directory for images.",
 )
-def import_supernote_file(filename, output):
+def import_supernote_file(filename: str, output: str) -> None:
     import_supernote_file_core(filename, output)
 
 
@@ -169,7 +171,7 @@ def import_supernote_file(filename, output):
     type=click.Path(writable=True),
     help="Output directory for images.",
 )
-def import_supernote_directory(directory, output):
+def import_supernote_directory(directory: str, output: str) -> None:
     import_supernote_directory_core(directory, output)
 
 
