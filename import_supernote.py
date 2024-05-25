@@ -97,6 +97,7 @@ def convert_to_png(notebook, path):
 def cli():
     pass
 
+
 def import_supernote_file_core(filename, output):
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
@@ -123,11 +124,13 @@ Obsidian daily notes: [[{year_month_day}]]
 
         pages = convert_to_png(notebook, image_output_path)
         for page in pages:
-            markdown = markdown +"\n"+ image_to_markdown(page)
+            markdown = markdown + "\n" + image_to_markdown(page)
 
         markdown = markdown + "\n\n# Images\n\n"
         for page in pages:
-            markdown = markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
+            markdown = (
+                markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
+            )
 
         with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
             f.write(markdown)
@@ -145,6 +148,7 @@ def import_supernote_directory_core(directory, output):
                 filename = os.path.join(root, file)
                 import_supernote_file_core(filename, output)
 
+
 @cli.command(name="file")
 @click.argument("filename", type=click.Path(readable=True))
 @click.option(
@@ -156,6 +160,7 @@ def import_supernote_directory_core(directory, output):
 def import_supernote_file(filename, output):
     import_supernote_file_core(filename, output)
 
+
 @cli.command(name="directory")
 @click.argument("directory", type=click.Path(readable=True))
 @click.option(
@@ -166,4 +171,7 @@ def import_supernote_file(filename, output):
 )
 def import_supernote_directory(directory, output):
     import_supernote_directory_core(directory, output)
+
+
+if __name__ == "__main__":
     cli()
