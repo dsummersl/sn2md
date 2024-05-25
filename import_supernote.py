@@ -144,8 +144,7 @@ Obsidian daily notes: [[{year_month_day}]]
 
         print(os.path.join(image_output_path, f"{notebook_name}.md"))
     except ValueError:
-        click.echo("Notebook already processed")
-        sys.exit(1)
+        raise ValueError("Notebook already processed")
 
 
 def import_supernote_directory_core(directory: str, output: str) -> None:
@@ -153,7 +152,10 @@ def import_supernote_directory_core(directory: str, output: str) -> None:
         for file in files:
             if file.endswith(".note"):
                 filename = os.path.join(root, file)
-                import_supernote_file_core(filename, output)
+                try:
+                    import_supernote_file_core(filename, output)
+                except ValueError as e:
+                    click.echo(f"Skipping {filename}: {e}")
 
 
 @cli.command(name="file")
