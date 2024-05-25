@@ -108,11 +108,11 @@ def cli():
 
 def import_supernote_file_core(filename: str, output: str) -> None:
     # Export images of the note file into a directory with the same basename as the file.
-    compute_and_check_notebook_hash(filename, output)
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
     image_output_path = os.path.join(output, notebook_name)
     os.makedirs(image_output_path, exist_ok=True)
+    compute_and_check_notebook_hash(filename, image_output_path)
 
     # the notebook_name is YYYYMMDD_HHMMSS
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
