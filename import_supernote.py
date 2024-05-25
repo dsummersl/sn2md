@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import sys
+from typing import Callable, List
 
 import click
 import supernotelib as sn
@@ -49,9 +50,13 @@ def load_notebook(path: str) -> sn.Notebook:
     return sn.load_notebook(path)
 
 
-from typing import Callable, List
-
-def convert_all(converter: ImageConverter, total: int, path: str, save_func: Callable, visibility_overlay: VisibilityOverlay) -> List[str]:
+def convert_all(
+    converter: ImageConverter,
+    total: int,
+    path: str,
+    save_func: Callable,
+    visibility_overlay: dict[str, VisibilityOverlay],
+) -> List[str]:
     file_name = path + "/page.png"
     basename, extension = os.path.splitext(file_name)
     max_digits = len(str(total))
@@ -157,6 +162,7 @@ def import_supernote_directory_core(directory: str, output: str) -> None:
     "--output",
     "-o",
     type=click.Path(writable=True),
+    default="supernote",
     help="Output directory for images.",
 )
 def import_supernote_file(filename: str, output: str) -> None:
@@ -169,6 +175,7 @@ def import_supernote_file(filename: str, output: str) -> None:
     "--output",
     "-o",
     type=click.Path(writable=True),
+    default="supernote",
     help="Output directory for images.",
 )
 def import_supernote_directory(directory: str, output: str) -> None:
