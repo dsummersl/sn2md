@@ -18,18 +18,15 @@ eval "$(/opt/homebrew/bin/pyenv init --path)"
 /opt/homebrew/bin/pyenv local 3.11.6
 
 # Using Poetry to run the script directly
-for file in ~/Dropbox/Supernote/Note/*.note; do
-    echo "Processing $file"
-    set +e
-    markdown_file=$(poetry run python import_supernote.py -o supernote "$file")
-    status=$?
-    set -e
-    if [ $status -eq 0 ]; then
-        echo "  Processed $file to $markdown_file"
-        year=$(echo $file | grep -oE '[0-9]{4}' | head -1)
+output=$(poetry run python import_supernote.py directory ~/Dropbox/Supernote/Note -o supernote)
+status=$?
+if [ $status -eq 0 ]; then
+    echo "$output" | while IFS= read -r markdown_file; do
+        echo "  Processed to $markdown_file"
+        year=$(echo $markdown_file | grep -oE '[0-9]{4}' | head -1)
         eval "cp $markdown_file ~/Documents/obsidian-vaults/personal-obsidian/Journals/$year/"
-    else
-        echo "  Skipping $file"
-    fi
-done
+    done
+else
+    echo "  Skipping directory processing"
+fi
 
