@@ -83,10 +83,13 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
                 and metadata["notebook_hash"] == notebook_hash
             ):
                 raise ValueError("The notebook hasn't been modified.")
-    else:
-        # Store the notebook_hash in the metadata
-        with open(metadata_path, "w") as f:
-            yaml.dump({"notebook_hash": notebook_hash}, f)
+
+    # Store the notebook_hash in the metadata
+    with open(metadata_path, "w") as f:
+        yaml.dump({
+            "notebook_hash": notebook_hash,
+            "notebook": notebook_path
+        }, f)
 
 
 def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
