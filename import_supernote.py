@@ -57,7 +57,7 @@ def convert_all(
     save_func: Callable,
     visibility_overlay: dict[str, VisibilityOverlay],
 ) -> List[str]:
-    file_name = path + "/page.png"
+    file_name = path + "/" + os.path.basename(path) + ".png"
     basename, extension = os.path.splitext(file_name)
     max_digits = len(str(total))
     files = []
@@ -108,7 +108,7 @@ def cli():
 def import_supernote_file_core(filename: str, output: str) -> None:
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
-    notebook_name = os.path.splitext(os.path.basename(filename))[0]
+    notebook_name = os.path.basename(os.path.dirname(filename))
     image_output_path = os.path.join(output, notebook_name)
     os.makedirs(image_output_path, exist_ok=True)
 
