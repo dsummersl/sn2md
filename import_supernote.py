@@ -163,4 +163,3 @@ def import_supernote_directory(directory, output):
 
 if __name__ == "__main__":
     cli()
-    import_supernote()
