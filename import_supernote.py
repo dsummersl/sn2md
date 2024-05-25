@@ -108,17 +108,16 @@ def cli():
 def import_supernote_file_core(filename: str, output: str) -> None:
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
-    notebook_name = os.path.basename(os.path.dirname(filename))
+    notebook_name = os.path.splitext(os.path.basename(filename))[0]
     image_output_path = os.path.join(output, notebook_name)
     os.makedirs(image_output_path, exist_ok=True)
 
-    try:
-        # the notebook_name is YYYYMMDD_HHMMSS
-        year_month_day = (
-            f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
-        )
-        # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
-        markdown = f"""---
+    # the notebook_name is YYYYMMDD_HHMMSS
+    year_month_day = (
+        f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
+    )
+    # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
+    markdown = f"""---
 created: {year_month_day}
 tags: journal/entry, supernote
 ---
@@ -129,22 +128,20 @@ Obsidian daily notes: [[{year_month_day}]]
 
 """
 
-        pages = convert_to_png(notebook, image_output_path)
-        for page in pages:
-            markdown = markdown + "\n" + image_to_markdown(page)
+    pages = convert_to_png(notebook, image_output_path)
+    for page in pages:
+        markdown = markdown + "\n" + image_to_markdown(page)
 
-        markdown = markdown + "\n\n# Images\n\n"
-        for page in pages:
-            markdown = (
-                markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
-            )
+    markdown = markdown + "\n\n# Images\n\n"
+    for page in pages:
+        markdown = (
+            markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
+        )
 
-        with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
-            f.write(markdown)
+    with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
+        f.write(markdown)
 
-        print(os.path.join(image_output_path, f"{notebook_name}.md"))
-    except ValueError:
-        raise ValueError("Notebook already processed")
+    print(os.path.join(image_output_path, f"{notebook_name}.md"))
 
 
 def import_supernote_directory_core(directory: str, output: str) -> None:
@@ -168,7 +165,11 @@ def import_supernote_directory_core(directory: str, output: str) -> None:
     help="Output directory for images.",
 )
 def import_supernote_file(filename: str, output: str) -> None:
-    import_supernote_file_core(filename, output)
+    try:
+        import_supernote_file_core(filename, output)
+    except ValueError:
+        print("Notebook already processed")
+        sys.exit(1)
 
 
 @cli.command(name="directory")
