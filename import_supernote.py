@@ -149,7 +149,7 @@ def import_supernote_directory_core(directory: str, output: str) -> None:
                 try:
                     import_supernote_file_core(filename, output)
                 except ValueError as e:
-                    click.echo(f"Skipping {filename}: {e}")
+                    click.echo(f"Skipping {filename}: {e}", err=True)
 
 
 @cli.command(name="file")
