@@ -13,9 +13,19 @@ from supernotelib.converter import ImageConverter, VisibilityOverlay
 
 TO_MARKDOWN_TEMPLATE = """
 Convert the following image to markdown format. Incorporate bullet journal
-styles to this document. For '.>-*X' in front of lines use assume its a list
-item. Return only markdown - no codeblocks or flavor text before/after the
-output.
+styles to this document. Convert diagrams of more than one shape into mermaid
+style codeblocks if it makes sense.
+"""
+
+MARKDOWN_TEMPLATE = """---
+created: {year_month_day}
+tags: journal/entry, supernote
+---
+
+Obsidian daily notes: [[{year_month_day}]]
+
+# Text
+
 """
 
 chat = ChatOpenAI(model="gpt-4o")
@@ -119,21 +129,13 @@ def import_supernote_file_core(filename: str, output: str) -> None:
     # the notebook_name is YYYYMMDD_HHMMSS
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
     # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
-    markdown = f"""---
-created: {year_month_day}
-tags: journal/entry, supernote
----
-
-Obsidian daily notes: [[{year_month_day}]]
-
-# Text
-
-"""
+    markdown = MARKDOWN_TEMPLATE.format(year_month_day=year_month_day)
 
     pages = convert_to_png(notebook, image_output_path)
     for page in pages:
         markdown = markdown + "\n" + image_to_markdown(page)
 
+    # TODO make this part of some templating function, and just pass the path to the images
     markdown = markdown + "\n\n# Images\n\n"
     for page in pages:
         markdown = markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
