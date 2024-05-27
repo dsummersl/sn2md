@@ -12,19 +12,16 @@ from langchain_openai import ChatOpenAI
 from supernotelib.converter import ImageConverter, VisibilityOverlay
 
 TO_MARKDOWN_TEMPLATE = """
-Convert the following image to markdown format. Incorporate bullet journal
-styles to this document. Convert diagrams of more than one shape into mermaid
-style codeblocks if it makes sense.
+Convert the following page to markdown:
+- If a diagram or image appears on the page, and is a simple diagram that the mermaid diagramming tool can achieve, create a mermaid codeblock of it.
+- When it is unclear what an image is, don't output anything for it.
+- Do not output other (non mermaid) codeblock types.
 """
 
 MARKDOWN_TEMPLATE = """---
 created: {year_month_day}
 tags: journal/entry, supernote
 ---
-
-Obsidian daily notes: [[{year_month_day}]]
-
-# Text
 
 """
 
