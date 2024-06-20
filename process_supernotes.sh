@@ -5,7 +5,7 @@
 # errexit: abort script at first error
 # set -e
 # print command to stdout before executing it:
-set -x
+# set -x
 
 cd ~/Documents/obsidian-vaults
 
@@ -20,9 +20,15 @@ source /Users/danesummers/Library/Caches/pypoetry/virtualenvs/obsidian-vaults-XM
 source ~/.zprofile
 
 # Using Poetry to run the script directly
-output=$(python import_supernote.py directory ~/Dropbox/Supernote/Note -o supernote)
+output=$(poetry run python import_supernote.py directory ~/Dropbox/Supernote/Note -o supernote)
 echo "$output" | while IFS= read -r markdown_file; do
+    if [ -z "$markdown_file" ]; then
+        continue
+    fi
     echo "  Processed to $markdown_file"
     year=$(echo $markdown_file | grep -oE '[0-9]{4}' | head -1)
     eval "cp $markdown_file ~/Documents/obsidian-vaults/personal-obsidian/Journals/$year/"
+    # copy over the images in the same directory too
+    # image_dir=$(dirname $markdown_file)
+    # eval "cp $image_dir/* ~/Documents/obsidian-vaults/personal-obsidian/Journals/$year/attachments/"
 done

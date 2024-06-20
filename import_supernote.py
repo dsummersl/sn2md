@@ -12,10 +12,15 @@ from langchain_openai import ChatOpenAI
 from supernotelib.converter import ImageConverter, VisibilityOverlay
 
 TO_MARKDOWN_TEMPLATE = """
+###
+Context (what the last couple lines of the previous page were converted to markdown):
+{context}
+###
 Convert the following page to markdown:
 - If a diagram or image appears on the page, and is a simple diagram that the mermaid diagramming tool can achieve, create a mermaid codeblock of it.
 - When it is unclear what an image is, don't output anything for it.
-- Do not output other (non mermaid) codeblock types.
+- Assume text is not in a codeblock. Do not wrap any text in codeblocks.
+- Use $$, $ style math blocks for math equations.
 """
 
 MARKDOWN_TEMPLATE = """---
@@ -33,12 +38,12 @@ def encode_image(image_path: str) -> str:
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-def image_to_markdown(path: str) -> str:
+def image_to_markdown(path: str, context: str) -> str:
     result = chat.invoke(
         [
             HumanMessage(
                 content=[
-                    {"type": "text", "text": TO_MARKDOWN_TEMPLATE},
+                    {"type": "text", "text": TO_MARKDOWN_TEMPLATE.format(context=context)},
                     {
                         "type": "image_url",
                         "image_url": {
@@ -129,8 +134,12 @@ def import_supernote_file_core(filename: str, output: str) -> None:
     markdown = MARKDOWN_TEMPLATE.format(year_month_day=year_month_day)
 
     pages = convert_to_png(notebook, image_output_path)
-    for page in pages:
-        markdown = markdown + "\n" + image_to_markdown(page)
+    for i, page in enumerate(pages):
+        context = ""
+        if i > 0 and len(markdown) > 0:
+            # include the last 50 characters...
+            context = markdown[-50:]
+        markdown = markdown + "\n" + image_to_markdown(page, context)
 
     # TODO make this part of some templating function, and just pass the path to the images
     markdown = markdown + "\n\n# Images\n\n"
