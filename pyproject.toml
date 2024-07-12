@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "obsidian-vaults"
+name = "sn2md"
 version = "0.1.0"
 description = ""
 authors = ["Dane Summers <dsummersl@yahoo.com>"]
@@ -24,3 +24,6 @@ autoimport = "^1.5.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+sn2md = "sn2md.import_supernote:cli"

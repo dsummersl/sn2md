@@ -1,6 +1,6 @@
 # Supernote Importer
 
-Supernote Importer is a command-line tool designed to convert Supernote `.note` files into markdown format. It leverages OCR and the GPT-4 model to convert images and text from Supernote files into a structured markdown document.
+Supernote Importer is a command-line tool designed to convert Supernote `.note` files to markdown format. It leverages OCR and the GPT-4 model to convert images and text from Supernote files into a structured markdown document.
 
 ## Features
 
@@ -11,16 +11,19 @@ Supernote Importer is a command-line tool designed to convert Supernote `.note` 
 
 ## Installation
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/yourusername/supernote-importer.git
-    cd supernote-importer
-    ```
+```sh
+pip install sn2md
+```
 
-2. Install dependencies using Poetry:
-    ```sh
-    poetry install
-    ```
+Setup your **OPENAI_API_KEY** environment variable.
+
+## Development
+
+```sh
+git clone https://github.com/yourusername/supernote-importer.git
+cd supernote-importer
+poetry install
+```
 
 ## Usage
 

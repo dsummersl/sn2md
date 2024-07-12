@@ -23,8 +23,7 @@ Convert the following page to markdown:
 - Use $$, $ style math blocks for math equations.
 """
 
-# TODO export template
-MARKDOWN_TEMPLATE = """---
+DEFAULT_MD_TEMPLATE = """---
 created: {year_month_day}
 tags: journal/entry, supernote
 ---
@@ -44,7 +43,10 @@ def image_to_markdown(path: str, context: str) -> str:
         [
             HumanMessage(
                 content=[
-                    {"type": "text", "text": TO_MARKDOWN_TEMPLATE.format(context=context)},
+                    {
+                        "type": "text",
+                        "text": TO_MARKDOWN_TEMPLATE.format(context=context),
+                    },
                     {
                         "type": "image_url",
                         "image_url": {
@@ -99,10 +101,7 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
 
     # Store the notebook_hash in the metadata
     with open(metadata_path, "w") as f:
-        yaml.dump({
-            "notebook_hash": notebook_hash,
-            "notebook": notebook_path
-        }, f)
+        yaml.dump({"notebook_hash": notebook_hash, "notebook": notebook_path}, f)
 
 
 def convert_to_png(notebook: sn.Notebook, path: str) -> list[str]:
@@ -121,11 +120,14 @@ def cli():
     pass
 
 
-def import_supernote_file_core(filename: str, output: str, template_path: str = None) -> None:
-    global MARKDOWN_TEMPLATE
+def import_supernote_file_core(
+    filename: str, output: str, template_path: str | None = None
+) -> None:
+    global DEFAULT_MD_TEMPLATE
+    template = DEFAULT_MD_TEMPLATE
     if template_path:
-        with open(template_path, 'r') as template_file:
-            MARKDOWN_TEMPLATE = template_file.read()
+        with open(template_path, "r") as template_file:
+            template = template_file.read()
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
@@ -136,7 +138,7 @@ def import_supernote_file_core(filename: str, output: str, template_path: str = 
     # the notebook_name is YYYYMMDD_HHMMSS
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
     # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
-    markdown = MARKDOWN_TEMPLATE.format(year_month_day=year_month_day)
+    markdown = template.format(year_month_day=year_month_day)
 
     pages = convert_to_png(notebook, image_output_path)
     for i, page in enumerate(pages):
@@ -157,7 +159,9 @@ def import_supernote_file_core(filename: str, output: str, template_path: str = 
     print(os.path.join(image_output_path, f"{notebook_name}.md"))
 
 
-def import_supernote_directory_core(directory: str, output: str, template_path: str = None) -> None:
+def import_supernote_directory_core(
+    directory: str, output: str, template_path: str | None = None
+) -> None:
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
@@ -186,13 +190,6 @@ def import_supernote_directory_core(directory: str, output: str, template_path: 
     help="Path to a custom markdown template file.",
 )
 @click.option(
-    "--template",
-    "-t",
-    type=click.Path(readable=True),
-    default=None,
-    help="Path to a custom markdown template file.",
-)
-@click.option(
     "--output",
     "-o",
     type=click.Path(writable=True),
@@ -209,6 +206,13 @@ def import_supernote_file(filename: str, output: str, template: str) -> None:
 
 @cli.command(name="directory")
 @click.argument("directory", type=click.Path(readable=True))
+@click.option(
+    "--template",
+    "-t",
+    type=click.Path(readable=True),
+    default=None,
+    help="Path to a custom markdown template file.",
+)
 @click.option(
     "--output",
     "-o",
