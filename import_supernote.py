@@ -2,7 +2,7 @@ import base64
 import hashlib
 import os
 import sys
-from typing import Callable, List
+from typing import Callable
 
 import click
 import supernotelib as sn
@@ -23,6 +23,7 @@ Convert the following page to markdown:
 - Use $$, $ style math blocks for math equations.
 """
 
+# TODO export template
 MARKDOWN_TEMPLATE = """---
 created: {year_month_day}
 tags: journal/entry, supernote
@@ -67,7 +68,7 @@ def convert_all(
     path: str,
     save_func: Callable,
     visibility_overlay: dict[str, VisibilityOverlay],
-) -> List[str]:
+) -> list[str]:
     file_name = path + "/" + os.path.basename(path) + ".png"
     basename, extension = os.path.splitext(file_name)
     max_digits = len(str(total))
@@ -104,7 +105,7 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
         }, f)
 
 
-def convert_to_png(notebook: sn.Notebook, path: str) -> List[str]:
+def convert_to_png(notebook: sn.Notebook, path: str) -> list[str]:
     converter = ImageConverter(notebook)
     bg_visibility = VisibilityOverlay.DEFAULT
     vo = sn.converter.build_visibility_overlay(background=bg_visibility)
