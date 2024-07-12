@@ -121,7 +121,11 @@ def cli():
     pass
 
 
-def import_supernote_file_core(filename: str, output: str) -> None:
+def import_supernote_file_core(filename: str, output: str, template_path: str = None) -> None:
+    global MARKDOWN_TEMPLATE
+    if template_path:
+        with open(template_path, 'r') as template_file:
+            MARKDOWN_TEMPLATE = template_file.read()
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
@@ -153,7 +157,15 @@ def import_supernote_file_core(filename: str, output: str) -> None:
     print(os.path.join(image_output_path, f"{notebook_name}.md"))
 
 
-def import_supernote_directory_core(directory: str, output: str) -> None:
+def import_supernote_directory_core(directory: str, output: str, template_path: str = None) -> None:
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".note"):
+                filename = os.path.join(root, file)
+                try:
+                    import_supernote_file_core(filename, output, template_path)
+                except ValueError as e:
+                    click.echo(f"Skipping {filename}: {e}", err=True)
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
@@ -167,15 +179,29 @@ def import_supernote_directory_core(directory: str, output: str) -> None:
 @cli.command(name="file")
 @click.argument("filename", type=click.Path(readable=True))
 @click.option(
+    "--template",
+    "-t",
+    type=click.Path(readable=True),
+    default=None,
+    help="Path to a custom markdown template file.",
+)
+@click.option(
+    "--template",
+    "-t",
+    type=click.Path(readable=True),
+    default=None,
+    help="Path to a custom markdown template file.",
+)
+@click.option(
     "--output",
     "-o",
     type=click.Path(writable=True),
     default="supernote",
     help="Output directory for images.",
 )
-def import_supernote_file(filename: str, output: str) -> None:
+def import_supernote_file(filename: str, output: str, template: str) -> None:
     try:
-        import_supernote_file_core(filename, output)
+        import_supernote_file_core(filename, output, template)
     except ValueError:
         print("Notebook already processed")
         sys.exit(1)
@@ -190,7 +216,8 @@ def import_supernote_file(filename: str, output: str) -> None:
     default="supernote",
     help="Output directory for images.",
 )
-def import_supernote_directory(directory: str, output: str) -> None:
+def import_supernote_directory(directory: str, output: str, template: str) -> None:
+    import_supernote_directory_core(directory, output, template)
     import_supernote_directory_core(directory, output)
 
 
