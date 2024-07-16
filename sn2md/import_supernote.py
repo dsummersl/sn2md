@@ -25,7 +25,7 @@ Convert the following page to markdown:
 
 DEFAULT_MD_TEMPLATE = """---
 created: {year_month_day}
-tags: journal/entry, supernote
+tags: supernote
 ---
 
 """
@@ -151,7 +151,7 @@ def import_supernote_file_core(
     # TODO make this part of some templating function, and just pass the path to the images
     markdown = markdown + "\n\n# Images\n\n"
     for page in pages:
-        markdown = markdown + f"![{page}|200](file://{os.path.abspath(page)}#outline)\n"
+        markdown = markdown + f"![{page}]({page})\n"
 
     with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
         f.write(markdown)

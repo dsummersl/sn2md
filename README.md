@@ -1,6 +1,6 @@
-# Supernote Importer
+# Supernote to Markdown converter (sn2md)
 
-Supernote Importer is a command-line tool designed to convert Supernote `.note` files to markdown format. It leverages OCR and the GPT-4 model to convert images and text from Supernote files into a structured markdown document.
+**sn2md** is a command-line tool to convert Supernote `.note` files into markdown. It leverages OpenAI GPT-4o to convert images and text from Supernote files into a structured markdown document.
 
 ## Features
 

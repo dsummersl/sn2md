@@ -20,15 +20,16 @@ source /Users/danesummers/.pyenv/versions/3.11.9/envs/obsidian-vaults/bin/activa
 source ~/.zprofile
 
 # Using Poetry to run the script directly
-output=$(poetry run python sn2md/import_supernote.py directory ~/Dropbox/Supernote/Note -o supernote)
+output=$(sn2md directory ~/Dropbox/Supernote/Note -t supernote-template.yaml -o supernote)
 echo "$output" | while IFS= read -r markdown_file; do
     if [ -z "$markdown_file" ]; then
         continue
     fi
     echo "  Processed to $markdown_file"
     year=$(echo $markdown_file | grep -oE '[0-9]{4}' | head -1)
-    eval "cp $markdown_file ~/Documents/obsidian-vaults/personal-obsidian/Journals/$year/"
+    cp "$markdown_file" "personal-obsidian/Journals/$year/"
     # copy over the images in the same directory too
-    # image_dir=$(dirname $markdown_file)
-    # eval "cp $image_dir/* ~/Documents/obsidian-vaults/personal-obsidian/Journals/$year/attachments/"
+    image_dir=$(dirname $markdown_file)
+    mkdir -p "personal-obsidian/Journals/$year/$image_dir"
+    cp "$image_dir/"*.png "personal-obsidian/Journals/$year/$image_dir"
 done
