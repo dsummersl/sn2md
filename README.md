@@ -27,35 +27,49 @@ poetry install
 
 ## Usage
 
-### Import a Single Supernote File
-
 To import a single Supernote `.note` file, use the `file` command:
 
 ```sh
-poetry run python import_supernote.py file <path_to_note_file> --output <output_directory>
+# import one .note file:
+sn2md file <path_to_note_file> --output <output_directory>
+
+# import a directory of .note files:
+sn2md directory <path_to_directory> --output <output_directory>
 ```
 
-- `<path_to_note_file>`: Path to the Supernote `.note` file.
-- `<output_directory>`: Directory where the output markdown and images will be saved.
+Notes:
+- A cache file is also generated, so repeated runs don't recreate the same data.
+  You can force a refresh by running with the `--force` flag.
 
-### Import a Directory of Supernote Files
 
-To import all Supernote `.note` files in a directory, use the `directory` command:
+## Custom Templates
 
-```sh
-poetry run python import_supernote.py directory <path_to_directory> --output <output_directory>
+You can provide your own [jinja template](https://jinja.palletsprojects.com/en/3.1.x/templates/#synopsis), if you prefer to customize the markdown
+output. The default template is:
+
+```md
+---
+created: {{year_month_day}}
+tags: supernote
+---
+
+{{markdown}}
+
+# Images
+{% for image in images %}
+- ![{{ image.name }}]({{image.name}})
+{% endfor %}
 ```
 
-- `<path_to_directory>`: Path to the directory containing Supernote `.note` files.
-- `<output_directory>`: Directory where the output markdown and images will be saved.
+Variables supplied to the template:
+- `year_month_day`: The date the note was created (eg, 2024-05-12).
+- `markdown`: The markdown content of the note.
+- `images`: an array of image objects with the following properties:
+  - `name`: The name of the image file.
+  - `rel_path`: The relative path to the image file to where the file was run
+    from.
+  - `abs_path`: The absolute path to the image file.
 
-## Example
-
-```sh
-poetry run python import_supernote.py file example.note --output output
-```
-
-This will convert `example.note` to a markdown file and save it in the `output` directory.
 
 ## Contributing
 

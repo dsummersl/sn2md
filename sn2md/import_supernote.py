@@ -7,6 +7,7 @@ from typing import Callable
 import click
 import supernotelib as sn
 import yaml
+from jinja2 import Template
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from supernotelib.converter import ImageConverter, VisibilityOverlay
@@ -24,10 +25,16 @@ Convert the following page to markdown:
 """
 
 DEFAULT_MD_TEMPLATE = """---
-created: {year_month_day}
+created: {{year_month_day}}
 tags: supernote
 ---
 
+{{markdown}}
+
+# Images
+{% for image in images %}
+- ![{{ image.name }}]({{image.name}})
+{% endfor %}
 """
 
 chat = ChatOpenAI(model="gpt-4o")
@@ -121,26 +128,35 @@ def cli():
 
 
 def import_supernote_file_core(
-    filename: str, output: str, template_path: str | None = None
+    filename: str, output: str, template_path: str | None = None, force: bool = False
 ) -> None:
     global DEFAULT_MD_TEMPLATE
     template = DEFAULT_MD_TEMPLATE
+
     if template_path:
         with open(template_path, "r") as template_file:
             template = template_file.read()
+
+    jinja_template = Template(template)
+
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
     image_output_path = os.path.join(output, notebook_name)
     os.makedirs(image_output_path, exist_ok=True)
-    compute_and_check_notebook_hash(filename, image_output_path)
+    try:
+        compute_and_check_notebook_hash(filename, image_output_path)
+    except ValueError as e:
+        click.echo(f"Reprocessing {filename}", err=False)
+        if not force:
+            raise e
 
     # the notebook_name is YYYYMMDD_HHMMSS
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
     # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
-    markdown = template.format(year_month_day=year_month_day)
 
     pages = convert_to_png(notebook, image_output_path)
+    markdown = ""
     for i, page in enumerate(pages):
         context = ""
         if i > 0 and len(markdown) > 0:
@@ -148,26 +164,33 @@ def import_supernote_file_core(
             context = markdown[-50:]
         markdown = markdown + "\n" + image_to_markdown(page, context)
 
-    # TODO make this part of some templating function, and just pass the path to the images
-    markdown = markdown + "\n\n# Images\n\n"
-    for page in pages:
-        markdown = markdown + f"![{page}]({page})\n"
+    images = [{
+        'name': f"{notebook_name}_{i}.png",
+        'rel_path': os.path.join(image_output_path, f"{notebook_name}_{i}.png"),
+        'abs_path': os.path.abspath(os.path.join(image_output_path, f"{notebook_name}_{i}.png"))
+    } for i in range(len(pages))]
+
+    jinja_markdown = jinja_template.render(
+        year_month_day=year_month_day,
+        markdown=markdown,
+        images=images
+    )
 
     with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
-        f.write(markdown)
+        _ = f.write(jinja_markdown)
 
     print(os.path.join(image_output_path, f"{notebook_name}.md"))
 
 
 def import_supernote_directory_core(
-    directory: str, output: str, template_path: str | None = None
+    directory: str, output: str, template_path: str | None = None, force: bool = False
 ) -> None:
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
                 filename = os.path.join(root, file)
                 try:
-                    import_supernote_file_core(filename, output, template_path)
+                    import_supernote_file_core(filename, output, template_path, force)
                 except ValueError as e:
                     click.echo(f"Skipping {filename}: {e}", err=True)
     for root, _, files in os.walk(directory):
@@ -175,7 +198,7 @@ def import_supernote_directory_core(
             if file.endswith(".note"):
                 filename = os.path.join(root, file)
                 try:
-                    import_supernote_file_core(filename, output)
+                    import_supernote_file_core(filename, output, force)
                 except ValueError as e:
                     click.echo(f"Skipping {filename}: {e}", err=True)
 
@@ -196,9 +219,15 @@ def import_supernote_directory_core(
     default="supernote",
     help="Output directory for images.",
 )
-def import_supernote_file(filename: str, output: str, template: str) -> None:
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Force reprocessing even if the notebook hasn't changed.",
+)
+def import_supernote_file(filename: str, output: str, template: str, force: bool) -> None:
     try:
-        import_supernote_file_core(filename, output, template)
+        import_supernote_file_core(filename, output, template, force)
     except ValueError:
         print("Notebook already processed")
         sys.exit(1)
@@ -220,9 +249,14 @@ def import_supernote_file(filename: str, output: str, template: str) -> None:
     default="supernote",
     help="Output directory for images.",
 )
-def import_supernote_directory(directory: str, output: str, template: str) -> None:
-    import_supernote_directory_core(directory, output, template)
-    import_supernote_directory_core(directory, output)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Force reprocessing even if the notebook hasn't changed.",
+)
+def import_supernote_directory(directory: str, output: str, template: str, force: bool) -> None:
+    import_supernote_directory_core(directory, output, template, force)
 
 
 if __name__ == "__main__":
