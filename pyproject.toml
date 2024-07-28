@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "sn2md"
 version = "0.1.0"
-description = ""
+description = "Converts Supernote exports to markdown"
 authors = ["Dane Summers <dsummersl@yahoo.com>"]
 readme = "README.md"
+
+[project.urls]
+homepage = "https://github.com/dsummersl/sn2md"
+issues = "https://github.com/dsummersl/sn2md/issues"
 
 [tool.poetry.dependencies]
 python = "^3.11"
