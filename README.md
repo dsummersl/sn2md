@@ -87,5 +87,4 @@ This project is licensed under the AGPL License. See the [LICENSE](LICENSE) file
 ## Acknowledgements
 
 - [Supernote](https://www.supernote.com/) for their amazing note-taking devices.
-- [LangChain](https://github.com/langchain/langchain) for providing the core libraries used in this project.
-- [OpenAI](https://www.openai.com/) for the GPT-4 model.
+- [supernote-tool library](https://github.com/jya-dev/supernote-tool) for .note file parsing.
