@@ -2,6 +2,8 @@
 
 **sn2md** is a command-line tool to convert Supernote `.note` files into markdown. It leverages OpenAI GPT-4o to convert images and text from Supernote files into a structured markdown document.
 
+![Supernote to Markdown](docs/supernote-to-markdown.png)
+
 Sample output: [20240712_151149.md](docs/20240712_151149/20240712_151149.md)
 
 ## Features
