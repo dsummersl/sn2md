@@ -96,7 +96,7 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
         notebook_hash = hashlib.sha1(f.read()).hexdigest()
 
     # Check if the hash already exists in the metadata
-    metadata_path = os.path.join(output_path, "metadata.yaml")
+    metadata_path = os.path.join(output_path, ".sn2md.metadata.yaml")
     if os.path.exists(metadata_path):
         with open(metadata_path, "r") as f:
             metadata = yaml.safe_load(f)
@@ -202,7 +202,7 @@ def import_supernote_directory_core(
             if file.endswith(".note"):
                 filename = os.path.join(root, file)
                 try:
-                    import_supernote_file_core(filename, output, force)
+                    import_supernote_file_core(filename, output, template_path, force)
                 except ValueError as e:
                     click.echo(f"Skipping {filename}: {e}", err=True)
 
@@ -253,7 +253,7 @@ def import_supernote_file(
     "-o",
     type=click.Path(writable=True),
     default="supernote",
-    help="Output directory for images.",
+    help="Output directory for images and files.",
 )
 @click.option(
     "--force",

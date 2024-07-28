@@ -2,12 +2,14 @@
 
 **sn2md** is a command-line tool to convert Supernote `.note` files into markdown. It leverages OpenAI GPT-4o to convert images and text from Supernote files into a structured markdown document.
 
+Sample output: [20240712_151149.md](docs/20240712_151149/20240712_151149.md)
+
 ## Features
 
 - Converts Supernote `.note` files to markdown.
 - Supports conversion of images to markdown using the Mermaid diagramming tool.
 - Automatically handles math equations using `$` and `$$` style math blocks.
-- Generates a markdown file with metadata and embedded images.
+- Generates a markdown file and embedded images (custom output supported).
 
 ## Installation
 
@@ -16,14 +18,6 @@ pip install sn2md
 ```
 
 Setup your **OPENAI_API_KEY** environment variable.
-
-## Development
-
-```sh
-git clone https://github.com/yourusername/supernote-importer.git
-cd supernote-importer
-poetry install
-```
 
 ## Usage
 
@@ -73,11 +67,20 @@ Variables supplied to the template:
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome. Please open an issue or submit a pull request.
+
+### Development
+
+```sh
+git clone https://github.com/yourusername/supernote-importer.git
+cd supernote-importer
+poetry install
+```
+
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the AGPL License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
