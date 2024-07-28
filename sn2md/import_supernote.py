@@ -37,7 +37,7 @@ tags: supernote
 {% endfor %}
 """
 
-chat = ChatOpenAI(model="gpt-4o")
+chat = ChatOpenAI(model="gpt-4o-mini")
 
 
 def encode_image(image_path: str) -> str:
@@ -147,9 +147,10 @@ def import_supernote_file_core(
     try:
         compute_and_check_notebook_hash(filename, image_output_path)
     except ValueError as e:
-        click.echo(f"Reprocessing {filename}", err=False)
         if not force:
             raise e
+        else:
+            click.echo(f"Reprocessing {filename}", err=False)
 
     # the notebook_name is YYYYMMDD_HHMMSS
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
@@ -164,16 +165,19 @@ def import_supernote_file_core(
             context = markdown[-50:]
         markdown = markdown + "\n" + image_to_markdown(page, context)
 
-    images = [{
-        'name': f"{notebook_name}_{i}.png",
-        'rel_path': os.path.join(image_output_path, f"{notebook_name}_{i}.png"),
-        'abs_path': os.path.abspath(os.path.join(image_output_path, f"{notebook_name}_{i}.png"))
-    } for i in range(len(pages))]
+    images = [
+        {
+            "name": f"{notebook_name}_{i}.png",
+            "rel_path": os.path.join(image_output_path, f"{notebook_name}_{i}.png"),
+            "abs_path": os.path.abspath(
+                os.path.join(image_output_path, f"{notebook_name}_{i}.png")
+            ),
+        }
+        for i in range(len(pages))
+    ]
 
     jinja_markdown = jinja_template.render(
-        year_month_day=year_month_day,
-        markdown=markdown,
-        images=images
+        year_month_day=year_month_day, markdown=markdown, images=images
     )
 
     with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:
@@ -225,7 +229,9 @@ def import_supernote_directory_core(
     is_flag=True,
     help="Force reprocessing even if the notebook hasn't changed.",
 )
-def import_supernote_file(filename: str, output: str, template: str, force: bool) -> None:
+def import_supernote_file(
+    filename: str, output: str, template: str, force: bool
+) -> None:
     try:
         import_supernote_file_core(filename, output, template, force)
     except ValueError:
@@ -255,7 +261,9 @@ def import_supernote_file(filename: str, output: str, template: str, force: bool
     is_flag=True,
     help="Force reprocessing even if the notebook hasn't changed.",
 )
-def import_supernote_directory(directory: str, output: str, template: str, force: bool) -> None:
+def import_supernote_directory(
+    directory: str, output: str, template: str, force: bool
+) -> None:
     import_supernote_directory_core(directory, output, template, force)
 
 
