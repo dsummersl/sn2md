@@ -37,5 +37,3 @@ def convert_notebook_to_pngs(notebook: sn.Notebook, path: str) -> list[str]:
         img.save(file_name, format="PNG")
 
     return convert_pages_to_pngs(converter, notebook.get_total_pages(), path, save, vo)
-
-
