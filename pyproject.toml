@@ -39,4 +39,4 @@ python_files = [
 ]
 
 [tool.poetry.scripts]
-sn2md = "sn2md.import_supernote:cli"
+sn2md = "sn2md.cli:cli"

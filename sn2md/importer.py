@@ -1,13 +1,11 @@
 import hashlib
 import os
-import sys
 
-import click
 import yaml
 from jinja2 import Template
 
-from .supernote_utils import load_notebook, convert_notebook_to_pngs
 from .langchain_utils import image_to_markdown
+from .supernote_utils import convert_notebook_to_pngs, load_notebook
 
 
 def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> None:
@@ -29,11 +27,6 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
     # Store the notebook_hash in the metadata
     with open(metadata_path, "w") as f:
         yaml.dump({"notebook_hash": notebook_hash, "notebook": notebook_path}, f)
-
-
-@click.group()
-def cli():
-    pass
 
 
 def import_supernote_file_core(
@@ -59,7 +52,7 @@ def import_supernote_file_core(
         if not force:
             raise e
         else:
-            click.echo(f"Reprocessing {filename}", err=False)
+            print(f"Reprocessing {filename}")
 
     # the notebook_name is YYYYMMDD_HHMMSS
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
@@ -105,7 +98,7 @@ def import_supernote_directory_core(
                 try:
                     import_supernote_file_core(filename, output, template_path, force)
                 except ValueError as e:
-                    click.echo(f"Skipping {filename}: {e}", err=True)
+                    print(f"Skipping {filename}: {e}")
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
@@ -113,68 +106,4 @@ def import_supernote_directory_core(
                 try:
                     import_supernote_file_core(filename, output, template_path, force)
                 except ValueError as e:
-                    click.echo(f"Skipping {filename}: {e}", err=True)
-
-
-@cli.command(name="file")
-@click.argument("filename", type=click.Path(readable=True))
-@click.option(
-    "--template",
-    "-t",
-    type=click.Path(readable=True),
-    default=None,
-    help="Path to a custom markdown template file.",
-)
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(writable=True),
-    default="supernote",
-    help="Output directory for images.",
-)
-@click.option(
-    "--force",
-    "-f",
-    is_flag=True,
-    help="Force reprocessing even if the notebook hasn't changed.",
-)
-def import_supernote_file(
-    filename: str, output: str, template: str, force: bool
-) -> None:
-    try:
-        import_supernote_file_core(filename, output, template, force)
-    except ValueError:
-        print("Notebook already processed")
-        sys.exit(1)
-
-
-@cli.command(name="directory")
-@click.argument("directory", type=click.Path(readable=True))
-@click.option(
-    "--template",
-    "-t",
-    type=click.Path(readable=True),
-    default=None,
-    help="Path to a custom markdown template file.",
-)
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(writable=True),
-    default="supernote",
-    help="Output directory for images and files.",
-)
-@click.option(
-    "--force",
-    "-f",
-    is_flag=True,
-    help="Force reprocessing even if the notebook hasn't changed.",
-)
-def import_supernote_directory(
-    directory: str, output: str, template: str, force: bool
-) -> None:
-    import_supernote_directory_core(directory, output, template, force)
-
-
-if __name__ == "__main__":
-    cli()
+                    print(f"Skipping {filename}: {e}")
