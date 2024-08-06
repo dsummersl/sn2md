@@ -16,7 +16,7 @@ def test_encode_image(mock_file):
 @patch("sn2md.langchain_utils.encode_image", return_value="encoded_image_data")
 @patch("langchain_openai.ChatOpenAI.invoke")
 def test_image_to_markdown(mock_call, mock_encode_image):
-    mock_call.return_value = "mocked_markdown"
+    mock_call.return_value.content = "mocked_markdown"
     result = image_to_markdown("dummy_path", "dummy_context")
     assert result == "mocked_markdown"
     mock_encode_image.assert_called_once_with("dummy_path")
