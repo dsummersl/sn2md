@@ -5,17 +5,20 @@ import yaml
 from jinja2 import Template
 
 from .langchain_utils import image_to_markdown
+from .supernote_utils import convert_notebook_to_pngs, load_notebook
 
-DEFAULT_MD_TEMPLATE = """
-# {{ year_month_day }}
+DEFAULT_MD_TEMPLATE = """---
+created: {{year_month_day}}
+tags: supernote
+---
 
-{{ markdown }}
+{{markdown}}
 
+# Images
 {% for image in images %}
-![{{ image.name }}]({{ image.rel_path }})
+- ![{{ image.name }}]({{image.name}})
 {% endfor %}
 """
-from .supernote_utils import convert_notebook_to_pngs, load_notebook
 
 
 def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> None:

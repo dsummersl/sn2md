@@ -3,7 +3,6 @@ import base64
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
-
 TO_MARKDOWN_TEMPLATE = """
 ###
 Context (what the last couple lines of the previous page were converted to markdown):
@@ -14,19 +13,6 @@ Convert the following page to markdown:
 - When it is unclear what an image is, don't output anything for it.
 - Assume text is not in a codeblock. Do not wrap any text in codeblocks.
 - Use $$, $ style math blocks for math equations.
-"""
-
-DEFAULT_MD_TEMPLATE = """---
-created: {{year_month_day}}
-tags: supernote
----
-
-{{markdown}}
-
-# Images
-{% for image in images %}
-- ![{{ image.name }}]({{image.name}})
-{% endfor %}
 """
 
 chat = ChatOpenAI(model="gpt-4o-mini")
