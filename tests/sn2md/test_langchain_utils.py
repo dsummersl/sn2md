@@ -10,9 +10,9 @@ def test_encode_image(mock_file):
     assert result == expected_result
 
 @patch("sn2md.langchain_utils.encode_image", return_value="encoded_image_data")
-@patch("sn2md.langchain_utils.chat.invoke")
+@patch("sn2md.langchain_utils.chat.__call__")
 def test_image_to_markdown(mock_chat_invoke, mock_encode_image):
-    mock_chat_invoke.return_value.content = "mocked_markdown"
+    mock_chat_invoke.return_value = "mocked_markdown"
     result = image_to_markdown("dummy_path", "dummy_context")
     assert result == "mocked_markdown"
     mock_encode_image.assert_called_once_with("dummy_path")
