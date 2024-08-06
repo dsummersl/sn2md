@@ -71,7 +71,7 @@ def load_notebook(path: str) -> sn.Notebook:
     return sn.load_notebook(path)
 
 
-def convert_all(
+def convert_pages_to_pngs(
     converter: ImageConverter,
     total: int,
     path: str,
@@ -111,7 +111,7 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
         yaml.dump({"notebook_hash": notebook_hash, "notebook": notebook_path}, f)
 
 
-def convert_to_png(notebook: sn.Notebook, path: str) -> list[str]:
+def convert_notebook_to_pngs(notebook: sn.Notebook, path: str) -> list[str]:
     converter = ImageConverter(notebook)
     bg_visibility = VisibilityOverlay.DEFAULT
     vo = sn.converter.build_visibility_overlay(background=bg_visibility)
@@ -119,7 +119,7 @@ def convert_to_png(notebook: sn.Notebook, path: str) -> list[str]:
     def save(img, file_name):
         img.save(file_name, format="PNG")
 
-    return convert_all(converter, notebook.get_total_pages(), path, save, vo)
+    return convert_pages_to_pngs(converter, notebook.get_total_pages(), path, save, vo)
 
 
 @click.group()
@@ -156,9 +156,9 @@ def import_supernote_file_core(
     year_month_day = f"{notebook_name[:4]}-{notebook_name[4:6]}-{notebook_name[6:8]}"
     # Perform OCR on each page, asking the LLM to generate a markdown file of a specific format.
 
-    pages = convert_to_png(notebook, image_output_path)
+    pngs = convert_notebook_to_pngs(notebook, image_output_path)
     markdown = ""
-    for i, page in enumerate(pages):
+    for i, page in enumerate(pngs):
         context = ""
         if i > 0 and len(markdown) > 0:
             # include the last 50 characters...
@@ -173,7 +173,7 @@ def import_supernote_file_core(
                 os.path.join(image_output_path, f"{notebook_name}_{i}.png")
             ),
         }
-        for i in range(len(pages))
+        for i in range(len(pngs))
     ]
 
     jinja_markdown = jinja_template.render(
