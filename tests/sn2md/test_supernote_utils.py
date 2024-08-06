@@ -1,8 +1,12 @@
 import os
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 import supernotelib as sn
-from sn2md.supernote_utils import load_notebook, convert_pages_to_pngs, convert_notebook_to_pngs
+
+from sn2md.supernote_utils import (convert_notebook_to_pngs,
+                                   convert_pages_to_pngs, load_notebook)
+
 
 @pytest.fixture
 def mock_notebook():
