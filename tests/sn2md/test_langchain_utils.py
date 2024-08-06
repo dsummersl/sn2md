@@ -1,7 +1,10 @@
-import pytest
-from unittest.mock import patch, mock_open
 import base64
+from unittest.mock import mock_open, patch
+
+import pytest
+
 from sn2md.langchain_utils import encode_image, image_to_markdown
+
 
 @patch("builtins.open", new_callable=mock_open, read_data=b"test_image_data")
 def test_encode_image(mock_file):
@@ -9,12 +12,12 @@ def test_encode_image(mock_file):
     result = encode_image("dummy_path")
     assert result == expected_result
 
+
 @patch("sn2md.langchain_utils.encode_image", return_value="encoded_image_data")
-@patch("sn2md.langchain_utils.chat.__call__")
-def test_image_to_markdown(mock_chat_invoke, mock_encode_image):
-    mock_chat_invoke.return_value = "mocked_markdown"
+@patch("langchain_openai.ChatOpenAI.invoke")
+def test_image_to_markdown(mock_call, mock_encode_image):
+    mock_call.return_value = "mocked_markdown"
     result = image_to_markdown("dummy_path", "dummy_context")
     assert result == "mocked_markdown"
     mock_encode_image.assert_called_once_with("dummy_path")
-    mock_chat_invoke.assert_called_once()
-
+    mock_call.assert_called_once()
