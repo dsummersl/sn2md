@@ -10,8 +10,7 @@ import click
 import supernotelib as sn
 import yaml
 from jinja2 import Template
-from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
+from openai import OpenAI
 from supernotelib.converter import ImageConverter, VisibilityOverlay
 
 DEFAULT_PROMPT = """
@@ -53,6 +52,7 @@ def load_config():
             options = {}
     return {"prompt": DEFAULT_PROMPT,
             "template": DEFAULT_MD_TEMPLATE,
+            "model": "gpt-4o-mini",
             "openai_api_key": os.environ.get("OPENAI_API_KEY"),
             ** options}
 
@@ -64,26 +64,25 @@ def encode_image(image_path: str) -> str:
 
 def image_to_markdown(path: str, context: str) -> str:
     config = load_config()
-    chat = ChatOpenAI(model="gpt-4o-mini", openai_api_key=config["openai_api_key"])
-    result = chat.invoke(
-        [
-            HumanMessage(
-                content=[
-                    {
-                        "type": "text",
-                        "text": config["prompt"].format(context=context),
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": "data:image/png;base64," + encode_image(path)
-                        },
-                    },
-                ]
-            )
-        ]
-    )
-    return str(result.content)
+    chat_client = OpenAI(api_key=config["openai_api_key"])
+    messages = [
+        {"role": "user",
+         "content": [
+             {
+                 "type": "text",
+                 "text": config["prompt"].format(context=context)
+             },
+             {
+                 "type": "image_url",
+                 "image_url": {
+                 "url": "data:image/png;base64," + encode_image(path)
+                 }
+             }
+         ]
+         }
+    ]
+    response = chat_client.chat.completions.create(model = config["model"], messages=messages)
+    return response.choices[0].message.content
 
 
 def load_notebook(path: str) -> sn.Notebook:
