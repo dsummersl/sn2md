@@ -5,6 +5,16 @@ import yaml
 from jinja2 import Template
 
 from .langchain_utils import image_to_markdown
+
+DEFAULT_MD_TEMPLATE = """
+# {{ year_month_day }}
+
+{{ markdown }}
+
+{% for image in images %}
+![{{ image.name }}]({{ image.rel_path }})
+{% endfor %}
+"""
 from .supernote_utils import convert_notebook_to_pngs, load_notebook
 
 
