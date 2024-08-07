@@ -2,6 +2,8 @@ import base64
 import hashlib
 import os
 import sys
+import tomllib
+from platformdirs import user_config_dir
 from typing import Callable
 
 import click
@@ -12,7 +14,7 @@ from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from supernotelib.converter import ImageConverter, VisibilityOverlay
 
-TO_MARKDOWN_TEMPLATE = """
+DEFAULT_PROMPT = """
 ###
 Context (what the last couple lines of the previous page were converted to markdown):
 {context}
@@ -37,7 +39,22 @@ tags: supernote
 {% endfor %}
 """
 
-chat = ChatOpenAI(model="gpt-4o-mini")
+def load_config():
+    """
+    Load the config file or use defaults.
+    """
+    # Get values in a toml file like a dict
+    # Should be .config/sn2md.toml
+    config_file = user_config_dir() + "/sn2md.toml"
+    try:
+        with open(config_file, "rb") as f:
+            options = tomllib.load(f)
+    except FileNotFoundError:
+            options = {}
+    return {"prompt": DEFAULT_PROMPT,
+            "template": DEFAULT_MD_TEMPLATE,
+            "openai_api_key": os.environ.get("OPENAI_API_KEY"),
+            ** options}
 
 
 def encode_image(image_path: str) -> str:
@@ -46,13 +63,15 @@ def encode_image(image_path: str) -> str:
 
 
 def image_to_markdown(path: str, context: str) -> str:
+    config = load_config()
+    chat = ChatOpenAI(model="gpt-4o-mini", openai_api_key=config["openai_api_key"])
     result = chat.invoke(
         [
             HumanMessage(
                 content=[
                     {
                         "type": "text",
-                        "text": TO_MARKDOWN_TEMPLATE.format(context=context),
+                        "text": config["prompt"].format(context=context),
                     },
                     {
                         "type": "image_url",
@@ -130,8 +149,7 @@ def cli():
 def import_supernote_file_core(
     filename: str, output: str, template_path: str | None = None, force: bool = False
 ) -> None:
-    global DEFAULT_MD_TEMPLATE
-    template = DEFAULT_MD_TEMPLATE
+    template = load_config()["template"]
 
     if template_path:
         with open(template_path, "r") as template_file:
