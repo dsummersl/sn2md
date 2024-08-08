@@ -1,4 +1,5 @@
 import hashlib
+import base64
 import os
 
 import yaml
@@ -17,6 +18,16 @@ tags: supernote
 # Images
 {% for image in images %}
 - ![{{ image.name }}]({{image.name}})
+{% endfor %}
+
+# Keywords
+{% for keyword in keywords %}
+- Page {{ keyword.page_number }}: {{ keyword.content }}
+{% endfor %}
+
+# Links
+{% for link in links %}
+- Page {{ link.page_number }}: {{ link.type }} {{ link.inout }} {{ link.filepath }}
 {% endfor %}
 """
 
@@ -56,6 +67,7 @@ def import_supernote_file_core(
 
     # Export images of the note file into a directory with the same basename as the file.
     notebook = load_notebook(filename)
+
     notebook_name = os.path.splitext(os.path.basename(filename))[0]
     image_output_path = os.path.join(output, notebook_name)
     os.makedirs(image_output_path, exist_ok=True)
@@ -91,8 +103,38 @@ def import_supernote_file_core(
         for i in range(len(pngs))
     ]
 
+    # Codes:
+    # https://github.com/jya-dev/supernote-tool/blob/807d5fa4bf524fdb1f9c7f1c67ed66ea96a49db5/supernotelib/fileformat.py#L236
+    def get_link_str(type_code: int) -> str:
+        if type_code == 0:
+            return "page"
+        elif type_code == 1:
+            return "file"
+        elif type_code == 2:
+            return "web"
+
+        return "unknown"
+
+    def get_inout_str(type_code: int) -> str:
+        if type_code == 0:
+            return "out"
+        elif type_code == 1:
+            return "in"
+
+        return "unknown"
+
     jinja_markdown = jinja_template.render(
-        year_month_day=year_month_day, markdown=markdown, images=images
+        year_month_day=year_month_day, markdown=markdown, images=images,
+        links=[{
+            'page_number': link.get_page_number(),
+            'type': get_link_str(link.get_type()),
+            'filepath': base64.standard_b64decode(link.get_filepath()),
+            'inout': get_inout_str(link.get_inout())
+        } for link in notebook.links],
+        keywords=[{
+            'page_number': keyword.get_page_number(),
+            'content': keyword.get_content()
+        } for keyword in notebook.keywords],
     )
 
     with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:

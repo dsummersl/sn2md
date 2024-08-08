@@ -1,3 +1,11 @@
+[tool.basedpyright]
+extraPaths = ["summarizer"]
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+
 [tool.poetry]
 name = "sn2md"
 version = "0.1.0"
