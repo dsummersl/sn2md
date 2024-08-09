@@ -8,7 +8,7 @@ reportMissingParameterType = false
 
 [tool.poetry]
 name = "sn2md"
-version = "0.1.0"
+version = "1.0.0"
 description = "Converts Supernote exports to markdown"
 authors = ["Dane Summers <dsummersl@yahoo.com>"]
 readme = "README.md"

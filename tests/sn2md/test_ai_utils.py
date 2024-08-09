@@ -3,7 +3,7 @@ from unittest.mock import mock_open, patch, Mock
 
 import pytest
 
-from sn2md.langchain_utils import encode_image, image_to_markdown
+from sn2md.ai_utils import encode_image, image_to_markdown
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=b"test_image_data")
@@ -13,8 +13,8 @@ def test_encode_image(mock_file):
     assert result == expected_result
 
 
-@patch("sn2md.langchain_utils.encode_image", return_value="encoded_image_data")
-@patch("sn2md.langchain_utils.OpenAI")
+@patch("sn2md.ai_utils.encode_image", return_value="encoded_image_data")
+@patch("sn2md.ai_utils.OpenAI")
 def test_image_to_markdown(openai_mock, mock_encode_image):
     mock_result = Mock()
     mock_choice = Mock()

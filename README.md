@@ -27,10 +27,10 @@ To import a single Supernote `.note` file, use the `file` command:
 
 ```sh
 # import one .note file:
-sn2md file <path_to_note_file> --output <output_directory>
+sn2md --output <output_directory> file <path_to_note_file>
 
 # import a directory of .note files:
-sn2md directory <path_to_directory> --output <output_directory>
+sn2md --output <output_directory> directory <path_to_directory>
 ```
 
 Notes:
@@ -38,7 +38,52 @@ Notes:
   You can force a refresh by running with the `--force` flag.
 
 
-## Custom Templates
+## Configuration
+
+A configuration file can be used to customize the conversion process. The
+default location is `~/.config/sn2md.toml`.
+
+```toml
+prompt = """
+###
+How you want to provide context from the previous page:
+{context}
+###
+Instructions for the AI
+"""
+
+title_prompt = """
+Instructions for the AI to decode any titles.
+"""
+
+template = """
+Your own custom output template...
+"""
+
+model = "gpt-4o-mini"
+
+openai_api_key = "your key"
+```
+
+### Prompt
+
+The default prompt sent to the OpenAI API is:
+
+```
+###
+Context (what the last couple lines of the previous page were converted to markdown):
+{context}
+###
+Convert the following image to markdown:
+- If a diagram or image appears on the page, and is a simple diagram that the mermaid diagramming tool can achieve, create a mermaid codeblock of it.
+- When it is unclear what an image is, don't output anything for it.
+- Assume text is not in a codeblock. Do not wrap any text in codeblocks.
+- Use $$, $ style math blocks for math equations.
+```
+
+This can be overriden in the configuration file.
+
+### Output Template
 
 You can provide your own [jinja template](https://jinja.palletsprojects.com/en/3.1.x/templates/#synopsis), if you prefer to customize the markdown
 output. The default template is:
@@ -54,7 +99,22 @@ tags: supernote
 # Images
 {% for image in images %}
 - ![{{ image.name }}]({{image.name}})
-{% endfor %}
+{%- endfor %}
+
+# Keywords
+{% for keyword in keywords %}
+- Page {{ keyword.page_number }}: {{ keyword.content }}
+{%- endfor %}
+
+# Links
+{% for link in links %}
+- Page {{ link.page_number }}: {{ link.type }} {{ link.inout }} {{ link.name }}
+{%- endfor %}
+
+# Titles
+{% for title in titles %}
+- Page {{ title.page_number }}: Level {{ title.level }} "{{ title.content }}"
+{%- endfor %}
 ```
 
 Variables supplied to the template:
@@ -65,6 +125,19 @@ Variables supplied to the template:
   - `rel_path`: The relative path to the image file to where the file was run
     from.
   - `abs_path`: The absolute path to the image file.
+- `links`: an array of links in or out of the note with the following properties:
+  - `page_number`: The page number the link is on.
+  - `type`: The link type (page, file, web)
+  - `name`: The basename of the link (url, page, web)
+  - `device_path`: The full path of the link
+  - `inout`: The direction of the link (in, out)
+- `keywords`: an array of keywords with the following properties:
+  - `page_number`: The page number the keyword is on.
+  - `content`: The content of the keyword.
+- `titles`: an array of titles with the following properties:
+  - `page_number`: The page number the title is on.
+  - `level`: The level of the title (1-4).
+  - `content`: The content of the title. If the area of the title appears to be text, the text, otherwise a description of it.
 
 
 ## Contributing

@@ -6,7 +6,7 @@ import yaml
 from jinja2 import Template
 
 from .types import Config
-from .langchain_utils import image_to_markdown, image_to_text
+from .ai_utils import image_to_markdown, image_to_text
 from .supernote_utils import convert_notebook_to_pngs, convert_binary_to_image, load_notebook
 
 DEFAULT_MD_TEMPLATE = """---

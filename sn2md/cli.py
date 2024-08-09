@@ -7,7 +7,7 @@ from platformdirs import user_config_dir
 
 from .importer import (DEFAULT_MD_TEMPLATE, import_supernote_directory_core,
                        import_supernote_file_core)
-from .langchain_utils import TO_MARKDOWN_TEMPLATE, TO_TEXT_TEMPLATE
+from .ai_utils import TO_MARKDOWN_TEMPLATE, TO_TEXT_TEMPLATE
 from .types import Config
 
 
