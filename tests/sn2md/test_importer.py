@@ -60,8 +60,10 @@ def test_import_supernote_file_core(temp_dir):
 
         mock_keyword = Mock()
         mock_keyword.get_page_number.return_value = 0
-        mock_keyword.get_content.return_value = "some keyword"
+        mock_keyword.get_content.return_value = b"some keyword"
         mock_notebook.return_value.keywords = [mock_keyword]
+
+        mock_notebook.return_value.titles = []
 
         mock_convert.return_value = ["page1.png", "page2.png"]
         mock_image_to_md.side_effect = ["markdown1", "markdown2"]

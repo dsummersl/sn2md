@@ -5,8 +5,8 @@ import os
 import yaml
 from jinja2 import Template
 
-from .langchain_utils import image_to_markdown
-from .supernote_utils import convert_notebook_to_pngs, load_notebook
+from .langchain_utils import image_to_markdown, image_to_text
+from .supernote_utils import convert_notebook_to_pngs, convert_binary_to_image, load_notebook
 
 DEFAULT_MD_TEMPLATE = """---
 created: {{year_month_day}}
@@ -18,17 +18,22 @@ tags: supernote
 # Images
 {% for image in images %}
 - ![{{ image.name }}]({{image.name}})
-{% endfor %}
+{%- endfor %}
 
 # Keywords
 {% for keyword in keywords %}
 - Page {{ keyword.page_number }}: {{ keyword.content }}
-{% endfor %}
+{%- endfor %}
 
 # Links
 {% for link in links %}
-- Page {{ link.page_number }}: {{ link.type }} {{ link.inout }} {{ link.filepath }}
-{% endfor %}
+- Page {{ link.page_number }}: {{ link.type }} {{ link.inout }} {{ link.name }}
+{%- endfor %}
+
+# Titles
+{% for title in titles %}
+- Page {{ title.page_number }}: Level {{ title.level }} "{{ title.content }}"
+{%- endfor %}
 """
 
 
@@ -128,13 +133,19 @@ def import_supernote_file_core(
         links=[{
             'page_number': link.get_page_number(),
             'type': get_link_str(link.get_type()),
-            'filepath': base64.standard_b64decode(link.get_filepath()),
+            'name': os.path.basename(base64.standard_b64decode(link.get_filepath())).decode('utf-8'),
+            'device_path': base64.standard_b64decode(link.get_filepath()),
             'inout': get_inout_str(link.get_inout())
         } for link in notebook.links],
         keywords=[{
             'page_number': keyword.get_page_number(),
-            'content': keyword.get_content()
+            'content': keyword.get_content().decode('utf-8')
         } for keyword in notebook.keywords],
+        titles=[{
+            'page_number': title.get_page_number(),
+            'content': image_to_text(convert_binary_to_image(notebook, title)),
+            'level': title.metadata['TITLELEVEL']
+        } for title in notebook.titles]
     )
 
     with open(os.path.join(image_output_path, f"{notebook_name}.md"), "w") as f:

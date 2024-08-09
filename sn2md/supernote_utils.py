@@ -1,5 +1,6 @@
 import os
 from typing import Callable
+from unittest.mock import patch
 
 import supernotelib as sn
 from supernotelib.converter import ImageConverter, VisibilityOverlay
@@ -37,3 +38,18 @@ def convert_notebook_to_pngs(notebook: sn.Notebook, path: str) -> list[str]:
         img.save(file_name, format="PNG")
 
     return convert_pages_to_pngs(converter, notebook.get_total_pages(), path, save, vo)
+
+
+def convert_binary_to_image(notebook, title):
+    page = notebook.get_page(title.get_page_number())
+    binary = title.get_content()
+
+    image_converter = sn.converter.ImageConverter(notebook)
+    decoder = image_converter.find_decoder(page)
+    # TODO ideally decoder would support decoding these titles directly - make a PR on supernotelib!
+    with patch('supernotelib.decoder.fileformat') as ff_mock:
+        titlerect = title.metadata['TITLERECT'].split(',')
+        ff_mock.PAGE_WIDTH = int(titlerect[2])
+        ff_mock.PAGE_HEIGHT = int(titlerect[3])
+        return image_converter._create_image_from_decoder(decoder, binary)
+
