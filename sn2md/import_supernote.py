@@ -111,7 +111,7 @@ def convert_all(
 def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> None:
     # Compute the hash of the notebook file itself using SHA-1 (same as shasum)
     with open(notebook_path, "rb") as f:
-            notebook_hash = hashlib.sha1(f.read()).hexdigest()
+        notebook_hash = hashlib.sha1(f.read()).hexdigest()
 
     # Check if the hash already exists in the metadata
     metadata_path = os.path.join(output_path, ".sn2md.metadata.yaml")
