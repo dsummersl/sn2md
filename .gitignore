@@ -6,3 +6,5 @@ pinedesk-obsidian
 supernote
 transcripts
 .aider*
+__pycache__
+dist/

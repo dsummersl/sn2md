@@ -1,6 +1,14 @@
+[tool.basedpyright]
+extraPaths = ["summarizer"]
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+
 [tool.poetry]
 name = "sn2md"
-version = "0.1.0"
+version = "1.0.0"
 description = "Converts Supernote exports to markdown"
 authors = ["Dane Summers <dsummersl@yahoo.com>"]
 readme = "README.md"
@@ -29,5 +37,13 @@ autoimport = "^1.5.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
+python_files = [
+    "sn2md/*.py"
+]
+
 [tool.poetry.scripts]
-sn2md = "sn2md.import_supernote:cli"
+sn2md = "sn2md.cli:cli"
