@@ -1,8 +1,7 @@
 import base64
 import io
 
-from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
+from openai import OpenAI
 from PIL.Image import Image
 
 TO_MARKDOWN_TEMPLATE = """
@@ -22,8 +21,6 @@ Convert the following image to text.
 - If the image does not appear to be text, output a brief description (no more than 4 words), prepended with "Image: "
 """
 
-chat = ChatOpenAI(model="gpt-4o-mini")
-
 
 def pil_to_base64(image: Image) -> str:
     image_buffer = io.BytesIO()
@@ -38,31 +35,41 @@ def encode_image(image_path: str) -> str:
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-def convert_image(text: str, b64_image: str) -> str:
-    result = chat.invoke(
-        [
-            HumanMessage(
-                content=[
-                    {
-                        "type": "text",
-                        "text": text
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": "data:image/png;base64," + b64_image
-                        },
-                    },
-                ]
-            )
-        ]
+def convert_image(text: str, b64_image: str, openai_api_key: str, model: str) -> str:
+    chat_client = OpenAI(api_key=openai_api_key)
+    messages = [
+        {"role": "user",
+         "content": [
+             {
+                 "type": "text",
+                 "text": text
+             },
+             {
+                 "type": "image_url",
+                 "image_url": {
+                 "url": "data:image/png;base64," + b64_image
+                 }
+             }
+         ]
+         }
+    ]
+    response = chat_client.chat.completions.create(model = model, messages=messages)
+    return response.choices[0].message.content
+
+
+def image_to_markdown(path: str, context: str, openai_api_key: str, model: str) -> str:
+    return convert_image(
+        TO_MARKDOWN_TEMPLATE.format(context=context),
+        encode_image(path),
+        openai_api_key,
+        model
     )
-    return str(result.content)
 
 
-def image_to_markdown(path: str, context: str) -> str:
-    return convert_image(TO_MARKDOWN_TEMPLATE.format(context=context), encode_image(path))
-
-
-def image_to_text(image: Image) -> str:
-    return convert_image(TO_TEXT_TEMPLATE, pil_to_base64(image))
+def image_to_text(image: Image, openai_api_key: str, model: str) -> str:
+    return convert_image(
+        TO_TEXT_TEMPLATE,
+        pil_to_base64(image),
+        openai_api_key,
+        model
+    )

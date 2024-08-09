@@ -9,6 +9,7 @@ import yaml
 from sn2md.importer import (compute_and_check_notebook_hash,
                             import_supernote_directory_core,
                             import_supernote_file_core)
+from sn2md.types import Config
 
 # Mock functions from other modules
 
@@ -68,7 +69,14 @@ def test_import_supernote_file_core(temp_dir):
         mock_convert.return_value = ["page1.png", "page2.png"]
         mock_image_to_md.side_effect = ["markdown1", "markdown2"]
 
-        import_supernote_file_core(filename, output, template_path, force=True)
+        config: Config = {
+            "prompt": "TO_MARKDOWN_TEMPLATE",
+            "title_prompt": "TO_TEXT_TEMPLATE",
+            "template": "DEFAULT_MD_TEMPLATE",
+            "model": "mock-model",
+            "openai_api_key": "mock-key",
+        }
+        import_supernote_file_core(filename, output, config, force=True)
 
         mock_hash.assert_called_once_with(filename, os.path.join(output, "test"))
         mock_notebook.assert_called_once_with(filename)

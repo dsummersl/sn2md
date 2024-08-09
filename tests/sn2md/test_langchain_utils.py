@@ -1,5 +1,5 @@
 import base64
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open, patch, Mock
 
 import pytest
 
@@ -14,10 +14,14 @@ def test_encode_image(mock_file):
 
 
 @patch("sn2md.langchain_utils.encode_image", return_value="encoded_image_data")
-@patch("langchain_openai.ChatOpenAI.invoke")
-def test_image_to_markdown(mock_call, mock_encode_image):
-    mock_call.return_value.content = "mocked_markdown"
-    result = image_to_markdown("dummy_path", "dummy_context")
+@patch("sn2md.langchain_utils.OpenAI")
+def test_image_to_markdown(openai_mock, mock_encode_image):
+    mock_result = Mock()
+    mock_choice = Mock()
+    mock_choice.message.content = "mocked_markdown"
+    mock_result.choices = [mock_choice]
+    openai_mock.return_value.chat.completions.create.return_value = mock_result
+    result = image_to_markdown("dummy_path", "dummy_context", "dummy_key", "dummy_model")
     assert result == "mocked_markdown"
     mock_encode_image.assert_called_once_with("dummy_path")
-    mock_call.assert_called_once()
+    openai_mock.assert_called_once()

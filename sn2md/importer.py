@@ -5,6 +5,7 @@ import os
 import yaml
 from jinja2 import Template
 
+from .types import Config
 from .langchain_utils import image_to_markdown, image_to_text
 from .supernote_utils import convert_notebook_to_pngs, convert_binary_to_image, load_notebook
 
@@ -59,14 +60,13 @@ def compute_and_check_notebook_hash(notebook_path: str, output_path: str) -> Non
 
 
 def import_supernote_file_core(
-    filename: str, output: str, template_path: str | None = None, force: bool = False
+    filename: str, output: str, config: Config, force: bool = False
 ) -> None:
     global DEFAULT_MD_TEMPLATE
     template = DEFAULT_MD_TEMPLATE
 
-    if template_path:
-        with open(template_path, "r") as template_file:
-            template = template_file.read()
+    if config['template']:
+        template = config['template']
 
     jinja_template = Template(template)
 
@@ -95,7 +95,12 @@ def import_supernote_file_core(
         if i > 0 and len(markdown) > 0:
             # include the last 50 characters...
             context = markdown[-50:]
-        markdown = markdown + "\n" + image_to_markdown(page, context)
+        markdown = markdown + "\n" + image_to_markdown(
+            page,
+            context,
+            config['openai_api_key'],
+            config['model']
+        )
 
     images = [
         {
@@ -143,7 +148,11 @@ def import_supernote_file_core(
         } for keyword in notebook.keywords],
         titles=[{
             'page_number': title.get_page_number(),
-            'content': image_to_text(convert_binary_to_image(notebook, title)),
+            'content': image_to_text(
+                convert_binary_to_image(notebook, title),
+                config['openai_api_key'],
+                config['model']
+            ),
             'level': title.metadata['TITLELEVEL']
         } for title in notebook.titles]
     )
@@ -155,14 +164,14 @@ def import_supernote_file_core(
 
 
 def import_supernote_directory_core(
-    directory: str, output: str, template_path: str | None = None, force: bool = False
+    directory: str, output: str, config: Config, force: bool = False
 ) -> None:
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
                 filename = os.path.join(root, file)
                 try:
-                    import_supernote_file_core(filename, output, template_path, force)
+                    import_supernote_file_core(filename, output, config, force)
                 except ValueError as e:
                     print(f"Skipping {filename}: {e}")
     for root, _, files in os.walk(directory):
@@ -170,6 +179,6 @@ def import_supernote_directory_core(
             if file.endswith(".note"):
                 filename = os.path.join(root, file)
                 try:
-                    import_supernote_file_core(filename, output, template_path, force)
+                    import_supernote_file_core(filename, output, config, force)
                 except ValueError as e:
                     print(f"Skipping {filename}: {e}")
