@@ -13,8 +13,7 @@ from jinja2 import Template
 from openai import OpenAI
 from supernotelib.converter import ImageConverter, VisibilityOverlay
 
-DEFAULT_PROMPT = """
-###
+DEFAULT_PROMPT = """###
 Context (what the last couple lines of the previous page were converted to markdown):
 {context}
 ###
@@ -42,8 +41,6 @@ def load_config():
     """
     Load the config file or use defaults.
     """
-    # Get values in a toml file like a dict
-    # Should be .config/sn2md.toml
     config_file = user_config_dir() + "/sn2md.toml"
     try:
         with open(config_file, "rb") as f:

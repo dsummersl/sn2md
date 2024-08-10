@@ -26,7 +26,7 @@ def get_config(config_file: str) -> Config:
                 **tomllib.load(f)
             }
     except FileNotFoundError:
-        print("No config file found, using defaults", file=sys.stderr)
+        print(f"No config file found at {config_file}, using defaults", file=sys.stderr)
 
     return defaults
 
