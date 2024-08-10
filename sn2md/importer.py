@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import base64
 import os
 
@@ -8,6 +9,9 @@ from jinja2 import Template
 from .types import Config
 from .ai_utils import image_to_markdown, image_to_text
 from .supernote_utils import convert_notebook_to_pngs, convert_binary_to_image, load_notebook
+
+logger = logging.getLogger(__name__)
+
 
 DEFAULT_MD_TEMPLATE = """---
 created: {{year_month_day}}
@@ -173,7 +177,7 @@ def import_supernote_directory_core(
                 try:
                     import_supernote_file_core(filename, output, config, force)
                 except ValueError as e:
-                    print(f"Skipping {filename}: {e}")
+                    logger.debug(f"Skipping {filename}: {e}")
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".note"):
@@ -181,4 +185,4 @@ def import_supernote_directory_core(
                 try:
                     import_supernote_file_core(filename, output, config, force)
                 except ValueError as e:
-                    print(f"Skipping {filename}: {e}")
+                    logger.debug(f"Skipping {filename}: {e}")
