@@ -72,7 +72,7 @@ template = """
 
 The default prompt sent to the OpenAI API is:
 
-```
+```markdown
 ###
 Context (what the last couple lines of the previous page were converted to markdown):
 {context}
@@ -91,7 +91,7 @@ This can be overridden in the configuration file.
 You can provide your own [jinja template](https://jinja.palletsprojects.com/en/3.1.x/templates/#synopsis), if you prefer to customize the markdown
 output. The default template is:
 
-```md
+```jinja
 ---
 created: {{year_month_day}}
 tags: supernote
