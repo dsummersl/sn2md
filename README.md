@@ -40,36 +40,39 @@ Notes:
 
 ## Configuration
 
-A configuration file can be used to customize the conversion process. The
-default location is `~/.config/sn2md.toml`.
+A configuration file can be used to override the program defaults. The
+default location is platform specific (eg, `~/Application Support/sn2md.toml` on OSX, `~/.config/sn2md.toml` on Linux, etc).
+
+Values that you can override:
+- template: The output template to geneerate markdown.
+- prompt: The prompt sent to the OpenAI API. Requires a `{context}` placeholder
+  to help the AI understand the context of the previous page.
+- title_prompt: The prompt sent to the OpenAI API to decode any titles (H1-H4 highlights).
+- model: The OpenAI model to use (default: `gpt-4o-mini`).
+- openai_api_key: Your OpenAI API key (defaults to your `$OPENAI_API_KEY` environmental variable setting).
+
+Example instructing the AI to convert text to pirate speak:
 
 ```toml
-prompt = """
-###
-How you want to provide context from the previous page:
+prompt = """###
+Context (what the last couple lines of the previous page were converted to markdown):
 {context}
 ###
-Instructions for the AI
-"""
-
-title_prompt = """
-Instructions for the AI to decode any titles.
+Convert the following image to markdown:
+- Don't convert diagrams or images. Just output "<IMAGE>" on a newline.
 """
 
 template = """
-Your own custom output template...
+# Pirate Speak
+{{markdown}}
 """
-
-model = "gpt-4o-mini"
-
-openai_api_key = "your key"
 ```
 
 ### Prompt
 
 The default prompt sent to the OpenAI API is:
 
-```
+```markdown
 ###
 Context (what the last couple lines of the previous page were converted to markdown):
 {context}
@@ -81,14 +84,14 @@ Convert the following image to markdown:
 - Use $$, $ style math blocks for math equations.
 ```
 
-This can be overriden in the configuration file.
+This can be overridden in the configuration file.
 
 ### Output Template
 
 You can provide your own [jinja template](https://jinja.palletsprojects.com/en/3.1.x/templates/#synopsis), if you prefer to customize the markdown
 output. The default template is:
 
-```md
+```jinja
 ---
 created: {{year_month_day}}
 tags: supernote
