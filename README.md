@@ -27,10 +27,10 @@ To import a single Supernote `.note` file, use the `file` command:
 
 ```sh
 # import one .note file:
-sn2md --output <output_directory> file <path_to_note_file>
+sn2md file <path_to_note_file>
 
 # import a directory of .note files:
-sn2md --output <output_directory> directory <path_to_directory>
+sn2md directory <path_to_directory>
 ```
 
 Notes:
@@ -41,15 +41,15 @@ Notes:
 ## Configuration
 
 A configuration file can be used to override the program defaults. The
-default location is platform specific (eg, `~/Application Support/sn2md.toml` on OSX, `~/.config/sn2md.toml` on Linux, etc).
+default location is platform specific (eg, `~/Library/Application Support/sn2md.toml` on OSX, `~/.config/sn2md.toml` on Linux, etc).
 
 Values that you can override:
-- template: The output template to geneerate markdown.
-- prompt: The prompt sent to the OpenAI API. Requires a `{context}` placeholder
+- `template`: The output template to generate markdown.
+- `prompt`: The prompt sent to the OpenAI API. Requires a `{context}` placeholder
   to help the AI understand the context of the previous page.
-- title_prompt: The prompt sent to the OpenAI API to decode any titles (H1-H4 highlights).
-- model: The OpenAI model to use (default: `gpt-4o-mini`).
-- openai_api_key: Your OpenAI API key (defaults to your `$OPENAI_API_KEY` environmental variable setting).
+- `title_prompt`: The prompt sent to the OpenAI API to decode any titles (H1-H4 highlights).
+- `model`: The OpenAI model to use (default: `gpt-4o-mini`).
+- `openai_api_key`: Your OpenAI API key (defaults to your `$OPENAI_API_KEY` environmental variable setting).
 
 Example instructing the AI to convert text to pirate speak:
 
