@@ -4,16 +4,16 @@ import io
 from openai import OpenAI
 from PIL.Image import Image
 
-TO_MARKDOWN_TEMPLATE = """
-###
-Context (what the last couple lines of the previous page were converted to markdown):
+TO_MARKDOWN_TEMPLATE = """###
+Context (the last few lines of markdown from the previous page):
 {context}
 ###
-Convert the following image to markdown:
-- If a diagram or image appears on the page, and is a simple diagram that the mermaid diagramming tool can achieve, create a mermaid codeblock of it.
+Convert the image to markdown:
+- If there is a simple diagram that the mermaid syntax can achieve, create a mermaid codeblock of it.
 - When it is unclear what an image is, don't output anything for it.
-- Assume text is not in a codeblock. Do not wrap any text in codeblocks.
-- Use $$, $ style math blocks for math equations.
+- Use $$, $ latex math blocks for math equations.
+- Support Obsidian syntaxes and dataview "field:: value" syntax.
+- Do not wrap text in codeblocks.
 """
 
 TO_TEXT_TEMPLATE = """
@@ -57,9 +57,9 @@ def convert_image(text: str, b64_image: str, openai_api_key: str, model: str) ->
     return response.choices[0].message.content
 
 
-def image_to_markdown(path: str, context: str, openai_api_key: str, model: str) -> str:
+def image_to_markdown(path: str, context: str, openai_api_key: str, model: str, prompt: str) -> str:
     return convert_image(
-        TO_MARKDOWN_TEMPLATE.format(context=context),
+        prompt.format(context=context),
         encode_image(path),
         openai_api_key,
         model
