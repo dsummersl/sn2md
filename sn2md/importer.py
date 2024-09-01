@@ -103,7 +103,8 @@ def import_supernote_file_core(
             page,
             context,
             config['openai_api_key'],
-            config['model']
+            config['model'],
+            config['prompt'],
         )
 
     images = [

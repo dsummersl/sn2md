@@ -21,7 +21,7 @@ def test_image_to_markdown(openai_mock, mock_encode_image):
     mock_choice.message.content = "mocked_markdown"
     mock_result.choices = [mock_choice]
     openai_mock.return_value.chat.completions.create.return_value = mock_result
-    result = image_to_markdown("dummy_path", "dummy_context", "dummy_key", "dummy_model")
+    result = image_to_markdown("dummy_path", "dummy_context", "dummy_key", "dummy_model", "some prompt: {context}")
     assert result == "mocked_markdown"
     mock_encode_image.assert_called_once_with("dummy_path")
     openai_mock.assert_called_once()
