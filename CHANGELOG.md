@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.1
+
+### Changed
+
+- Bugfix: ensure `prompt` in configuration file is used over the defaults.
+
 ## v1.0.0
 
 ### Added
