@@ -2,8 +2,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import supernotelib as sn
+from supernotelib import color
 
-from sn2md.importers.note import (convert_notebook_to_pngs,
+from sn2md.importers.note import (_create_color_bytearray_with_fallback,
+                                   convert_notebook_to_pngs,
                                    convert_pages_to_pngs, load_notebook)
 
 
@@ -42,3 +44,22 @@ def test_convert_notebook_to_pngs(mock_notebook):
             assert result[0] == "fake_path/fake_path_0.png"
             assert result[1] == "fake_path/fake_path_1.png"
             assert result[2] == "fake_path/fake_path_2.png"
+
+
+def test_color_bytearray_fallback_known_grayscale():
+    # A code present in the colormap delegates to its mapped value.
+    colormap = {0x61: 0x00}
+    result = _create_color_bytearray_with_fallback(None, "L", colormap, 0x61, 3)
+    assert result == bytearray((0x00,)) * 3
+
+
+def test_color_bytearray_fallback_unknown_grayscale():
+    # An unknown code uses the raw code value instead of crashing on None.
+    result = _create_color_bytearray_with_fallback(None, "L", {}, 0x7F, 4)
+    assert result == bytearray((0x7F,)) * 4
+
+
+def test_color_bytearray_fallback_unknown_rgb():
+    # In RGB mode an unknown code becomes a (code, code, code) gray triple.
+    result = _create_color_bytearray_with_fallback(None, color.MODE_RGB, {}, 0x42, 2)
+    assert result == bytearray((0x42, 0x42, 0x42)) * 2
