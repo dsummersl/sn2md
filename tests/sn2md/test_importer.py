@@ -242,6 +242,48 @@ def test_create_notebook_context():
         mock_convert_image.assert_called_once_with(mock_notebook, mock_title)
 
 
+def test_create_notebook_context_skips_undecodable_title():
+    mock_notebook = Mock()
+    mock_notebook.links = []
+    mock_notebook.keywords = []
+
+    bad_title = Mock()
+    bad_title.get_page_number.return_value = 1
+    bad_title.metadata = {"TITLELEVEL": 1}
+
+    good_title = Mock()
+    good_title.get_page_number.return_value = 2
+    good_title.metadata = {"TITLELEVEL": 1}
+
+    mock_notebook.titles = [bad_title, good_title]
+
+    config = Config(
+        output_path_template="{{file_basename}}",
+        output_filename_template="{{file_basename}}.md",
+        prompt="TO_MARKDOWN_TEMPLATE",
+        title_prompt="TO_TEXT_TEMPLATE",
+        template="{{markdown}}",
+        model="mock-model",
+        api_key="mock-key",
+    )
+
+    with patch("sn2md.importer.image_to_text") as mock_image_to_text, patch(
+        "sn2md.importer.convert_binary_to_image"
+    ) as mock_convert_image:
+        mock_image_to_text.return_value = "Good Title"
+        # First title fails to decode, second succeeds.
+        mock_convert_image.side_effect = [TypeError("boom"), Mock()]
+
+        context = create_notebook_context(mock_notebook, config, "gpt-4")
+
+        # The undecodable title is skipped, the import continues.
+        assert len(context["titles"]) == 1
+        assert context["titles"][0]["page_number"] == 2
+        assert context["titles"][0]["content"] == "Good Title"
+        mock_image_to_text.assert_called_once()
+        assert mock_convert_image.call_count == 2
+
+
 def test_verify_metadata_file(temp_dir):
     filename = os.path.join(temp_dir, "test.note")
     output = temp_dir

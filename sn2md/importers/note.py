@@ -6,6 +6,7 @@ from unittest.mock import patch
 from sn2md.types import ImageExtractor
 
 import supernotelib as sn
+from supernotelib import color
 from supernotelib.converter import ImageConverter, VisibilityOverlay
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,23 @@ logger = logging.getLogger(__name__)
 
 def load_notebook(path: str) -> sn.Notebook:
     return sn.load_notebook(path)
+
+
+def _create_color_bytearray_with_fallback(self, mode, colormap, color_code, length):
+    """Backport of RattaRleX2Decoder's fallback to the base RattaRleDecoder:
+    title regions contain anti-aliased grayscale codes absent from the base
+    colormap; use the raw code value instead of crashing on a None lookup."""
+    if mode == color.MODE_RGB:
+        c = colormap.get(color_code)
+        if c is not None:
+            r, g, b = color.get_rgb(c)
+        else:
+            r, g, b = (color_code, color_code, color_code)
+        return bytearray((r, g, b,)) * length
+    c = colormap.get(color_code)
+    if c is None:
+        c = color_code
+    return bytearray((c,)) * length
 
 
 def convert_pages_to_pngs(
@@ -56,6 +74,11 @@ def convert_binary_to_image(notebook, title):
     with (
         patch.object(notebook, "get_width") as width_mock,
         patch.object(notebook, "get_height") as height_mock,
+        patch.object(
+            type(decoder),
+            "_create_color_bytearray",
+            _create_color_bytearray_with_fallback,
+        ),
     ):
         width_mock.return_value = int(titlerect[2])
         height_mock.return_value = int(titlerect[3])

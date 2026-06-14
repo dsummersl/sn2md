@@ -113,20 +113,35 @@ def create_notebook_context(notebook: Notebook, config: Config, model: str) -> d
             }
             for keyword in (notebook.keywords if notebook else [])
         ],
-        "titles": [
+        "titles": _extract_titles(notebook, config, model),
+    }
+
+
+def _extract_titles(notebook: Notebook | None, config: Config, model: str) -> list[dict]:
+    titles = []
+    for title in notebook.titles if notebook else []:
+        try:
+            image = convert_binary_to_image(notebook, title)
+        except Exception as e:
+            logger.warning(
+                "Skipping title on page %s: failed to decode (%s)",
+                title.get_page_number(),
+                e,
+            )
+            continue
+        titles.append(
             {
                 "page_number": title.get_page_number(),
                 "content": image_to_text(
-                    convert_binary_to_image(notebook, title),
+                    image,
                     config.api_key,
                     model,
                     config.title_prompt,
                 ),
                 "level": title.metadata["TITLELEVEL"],
             }
-            for title in (notebook.titles if notebook else [])
-        ],
-    }
+        )
+    return titles
 
 
 def create_context(
