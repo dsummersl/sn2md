@@ -1,6 +1,6 @@
 [project]
 name = "sn2md"
-version = "2.7.0"
+version = "2.6.0"
 description = "Convert Supernote .note, .spd, PDF, or image files to text/images"
 readme = "README.md"
 requires-python = ">=3.11"
