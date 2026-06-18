@@ -11,13 +11,13 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.1.7,<9.0",
-  "supernotelib>=0.6.2,<1.0",
+  "supernotelib>=0.6.5",
   "pyyaml>=6.0.1,<7.0",
   "platformdirs>=4.2.2,<5.0",
   "jinja2>=3.1.4,<4.0",
   "llm>=0.26,<1.0",
   "pymupdf>=1.25.2,<2.0",
-  "tqdm>=4.67.1,<5.0",
+  "tqdm>=4.68.3,<5.0",
   "pydantic>=2.10.6,<3.0",
 ]
 
@@ -46,7 +46,7 @@ dev = [
   "pytest>=8.2.0",
   "radon>=6.0.1",
   "ruff>=0.5",
-  "treepeat>=0.1.0",
+  "treepeat>=0.6.0",
   "types-pyyaml>=6.0.12.20250915",
   "types-tqdm>=4.67.0.20250809",
 ]

@@ -37,7 +37,7 @@ def test_extract_images(mock_open, pdf_file, output_dir):
     mock_page2 = MagicMock()
     mock_page2.number = 1
     
-    mock_doc.__iter__.return_value = [mock_page1, mock_page2]
+    mock_doc.__getitem__.side_effect = lambda i: [mock_page1, mock_page2][i]
     mock_open.return_value = mock_doc
 
     # Mock pixmaps
