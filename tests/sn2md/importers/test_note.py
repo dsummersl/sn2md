@@ -3,8 +3,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 import supernotelib as sn
 
+from pathlib import Path
+
 from sn2md.importers.note import (convert_notebook_to_pngs,
                                    convert_pages_to_pngs, load_notebook)
+
+FIXTURE_DIR = Path(__file__).parent.parent / "fixtures"
 
 
 @pytest.fixture
@@ -42,3 +46,19 @@ def test_convert_notebook_to_pngs(mock_notebook):
             assert result[0] == "fake_path/fake_path_0.png"
             assert result[1] == "fake_path/fake_path_1.png"
             assert result[2] == "fake_path/fake_path_2.png"
+
+
+def test_load_real_notebook_fixture(tmp_path):
+    fixture = FIXTURE_DIR / "20260618_074222.note"
+    assert fixture.exists(), f"Fixture not found: {fixture}"
+
+    notebook = load_notebook(str(fixture))
+    assert notebook is not None
+    assert notebook.get_total_pages() > 0
+
+    pngs = convert_notebook_to_pngs(notebook, str(tmp_path))
+    assert len(pngs) == notebook.get_total_pages()
+
+    for png_path in pngs:
+        assert Path(png_path).exists()
+        assert Path(png_path).stat().st_size > 0

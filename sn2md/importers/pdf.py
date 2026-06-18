@@ -11,8 +11,9 @@ class PDFExtractor(ImageExtractor):
         doc = pymupdf.open(filename)
         max_digits = len(str(doc.page_count))
         files = []
-        for page in doc:
-            numbered_filename = basename + "_" + str(page.number).zfill(max_digits) + extension
+        for page_num in range(doc.page_count):
+            page = doc[page_num]
+            numbered_filename = basename + "_" + str(page_num).zfill(max_digits) + extension
             pixmap = page.get_pixmap(dpi=150)
             pixmap.save(numbered_filename)
             files.append(numbered_filename)
